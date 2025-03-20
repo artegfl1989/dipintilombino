@@ -87,7 +87,11 @@
                     video: {
                         facingMode: { exact: "environment" },
                         width: { ideal: 3840 },
-                        height: { ideal: 2160 }
+                        height: { ideal: 2160 },
+                        advanced: [{
+                            imageStabilizationMode: "auto",
+                            videoStabilizationMode: "auto"
+                        }]
                     }
                 });
                 
@@ -95,6 +99,36 @@
                 video.srcObject = stream;
                 const track = stream.getVideoTracks()[0];
                 
+                // Applica stabilizzazione massima
+                try {
+                    await track.applyConstraints({
+                        advanced: [{
+                            imageStabilizationMode: "auto",
+                            videoStabilizationMode: "auto"
+                        }]
+                    });
+                } catch(e) {
+                    console.log('Stabilization not supported:', e);
+                }
+
+                // Modifica gestione zoom per stabilizzazione
+                document.getElementById('zoom-max').onclick = async () => {
+                    currentZoom = maxZoom;
+                    video.style.transform = `scale(${maxZoom})`;
+                    document.getElementById('zoom-level').textContent = '180x 🔭';
+                    
+                    // Riapplica stabilizzazione al massimo zoom
+                    try {
+                        await track.applyConstraints({
+                            advanced: [{
+                                imageStabilizationMode: "auto",
+                                videoStabilizationMode: "auto"
+                            }]
+                        });
+                    } catch(e) {
+                        console.log('Stabilization adjustment failed:', e);
+                    }
+                };
                 // Controllo luminosità semplificato
                 let currentBrightness = 50;
                 
