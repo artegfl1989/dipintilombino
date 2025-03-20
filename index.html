@@ -85,52 +85,33 @@
 
         async function initCamera() {
             try {
+                // Richiesta base della fotocamera
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: "environment"
-                    }
+                    video: true,
+                    audio: false
                 });
                 
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
                 
-                // Assicuriamoci che il video sia caricato
-                video.onloadedmetadata = () => {
-                    video.play();
-                };
+                // Assicuriamoci che il video parta
+                await video.play();
                 
                 const track = stream.getVideoTracks()[0];
+                console.log('Fotocamera attiva:', track.label);
                 
-                // Verifichiamo le capacità della fotocamera
-                const capabilities = track.getCapabilities();
-                console.log('Capacità fotocamera:', capabilities);
-                
-                if (capabilities && capabilities.zoom) {
-                    const zoomIn = document.getElementById('zoom-in');
-                    zoomIn.onclick = () => {
-                        try {
-                            currentZoom += 1;
-                            track.applyConstraints({
-                                advanced: [{ zoom: currentZoom }]
-                            });
-                            updateZoomDisplay();
-                        } catch (e) {
-                            console.error('Errore zoom:', e);
-                        }
-                    };
-                } else {
-                    console.log('Zoom non supportato su questo dispositivo');
-                }
-
-                // Aggiungiamo gli altri controlli
+                // Aggiungiamo i controlli base
                 document.getElementById('capture').onclick = capturePhoto;
                 document.getElementById('record').onclick = toggleRecording;
                 
             } catch (err) {
                 console.error('Errore fotocamera:', err);
-                alert('Attiva i permessi della fotocamera');
+                alert('Per favore attiva i permessi della fotocamera e ricarica la pagina');
             }
         }
+
+        // Inizializza la fotocamera quando la pagina è caricata
+        window.addEventListener('DOMContentLoaded', initCamera);
     </script>
 
         function updateZoomDisplay() {
