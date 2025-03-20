@@ -70,10 +70,7 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: { exact: "environment" },
-                        // Rimuoviamo le dimensioni fisse che potrebbero limitare lo zoom
-                        zoom: true,
-                        focusMode: "continuous"
+                        facingMode: { exact: "environment" }
                     }
                 });
                 
@@ -83,37 +80,35 @@
                 const track = stream.getVideoTracks()[0];
                 const capabilities = track.getCapabilities();
                 
-                // Verifichiamo se lo zoom è supportato
-                if (capabilities.zoom) {
-                    console.log('Zoom massimo supportato:', capabilities.zoom.max);
-                    
-                    document.getElementById('zoom-in').onclick = async () => {
-                        try {
-                            // Incremento più aggressivo dello zoom
-                            currentZoom *= 3;
-                            if (currentZoom > capabilities.zoom.max) {
-                                currentZoom = capabilities.zoom.max;
-                            }
+                // Sistema zoom reale
+                document.getElementById('zoom-in').onclick = async () => {
+                    try {
+                        // Incremento zoom più graduale
+                        if (currentZoom === 1) currentZoom = 1000;
+                        else currentZoom = Math.min(currentZoom * 2, 20000);
+                        
+                        // Forziamo lo zoom massimo
+                        const constraints = {
+                            advanced: [{
+                                zoom: currentZoom
+                            }]
+                        };
+                        
+                        await track.applyConstraints(constraints);
+                        const settings = track.getSettings();
+                        
+                        // Verifica zoom effettivo
+                        const realZoom = settings.zoom || currentZoom;
+                        document.getElementById('zoom-level').textContent = 
+                            `${(realZoom/1000).toFixed(1)} KM`;
                             
-                            await track.applyConstraints({
-                                advanced: [{
-                                    zoom: currentZoom
-                                }]
-                            });
-                            
-                            document.getElementById('zoom-level').textContent = 
-                                `Distanza: ${(currentZoom/1000).toFixed(1)}km`;
-                                
-                            console.log('Zoom attuale:', currentZoom);
-                        } catch (e) {
-                            alert('Problema con lo zoom: prova a riavviare');
-                        }
-                    };
-                } else {
-                    alert('La tua fotocamera non supporta lo zoom');
-                }
+                        console.log('Zoom reale:', realZoom);
+                    } catch (e) {
+                        console.log('Debug zoom:', e, capabilities);
+                    }
+                };
             } catch (err) {
-                alert('Attiva la fotocamera posteriore');
+                alert('Riavvia e attiva la fotocamera posteriore');
             }
         }
 
