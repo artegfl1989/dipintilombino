@@ -88,13 +88,8 @@
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: 'environment',
-                        zoom: true,
-                        advanced: [{
-                            focusMode: 'manual',
-                            focusDistance: 0.01,
-                            exposureMode: 'manual',
-                            zoom: 20000
-                        }]
+                        width: { ideal: 4096 },
+                        height: { ideal: 2160 }
                     }
                 });
                 const video = document.getElementById('camera');
@@ -107,26 +102,10 @@
                     const zoomIn = document.getElementById('zoom-in');
                     
                     zoomIn.onclick = () => {
-                        currentZoom = Math.min(currentZoom + 1000, 20000);
+                        currentZoom = Math.min(currentZoom + 100, 20000);
                         track.applyConstraints({
                             advanced: [{
-                                zoom: currentZoom,
-                                focusMode: 'manual',
-                                focusDistance: 0.01
-                            }]
-                        });
-                        updateZoomDisplay();
-                    };
-                }
-                const zoomOut = document.getElementById('zoom-out');
-                
-                zoomOut.onclick = () => {
-                        currentZoom = Math.max(currentZoom / 1.5, 1);
-                        track.applyConstraints({
-                            advanced: [{
-                                zoom: currentZoom,
-                                focusMode: 'manual',
-                                focusDistance: 0.01
+                                zoom: currentZoom
                             }]
                         });
                         updateZoomDisplay();
@@ -137,7 +116,7 @@
                 document.getElementById('record').onclick = toggleRecording;
             } catch (err) {
                 console.error('Error accessing camera:', err);
-                alert('Error accessing camera. Please make sure you have granted camera permissions.');
+                alert('Errore: Assicurati di aver dato i permessi alla fotocamera');
             }
         }
 
