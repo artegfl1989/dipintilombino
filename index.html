@@ -113,8 +113,9 @@
                     ? 'video/webm; codecs=vp8,opus'
                     : 'video/webm';
                 
+                // Registrazione video
                 const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
+                const ctx = canvas.getContext('2d', { alpha: false });
                 canvas.width = 3840;
                 canvas.height = 2160;
                 
@@ -127,25 +128,24 @@
                 document.getElementById('record').onclick = () => {
                     recordedChunks = [];
                     const video = document.getElementById('camera');
+                    lastX = (video.videoWidth - video.videoWidth / currentZoom) / 2;
+                    lastY = (video.videoHeight - video.videoHeight / currentZoom) / 2;
                     
-                    // Funzione per catturare i frame con zoom
                     const drawFrame = () => {
                         const zoomArea = {
                             width: video.videoWidth / currentZoom,
                             height: video.videoHeight / currentZoom,
-                            // Centra perfettamente l'area di zoom
                             x: (video.videoWidth - video.videoWidth / currentZoom) / 2,
                             y: (video.videoHeight - video.videoHeight / currentZoom) / 2
                         };
                         
-                        // Pulisci il canvas prima di disegnare
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        zoomArea.x = lastX = lastX * 0.9 + zoomArea.x * 0.1;
+                        zoomArea.y = lastY = lastY * 0.9 + zoomArea.y * 0.1;
                         
-                        // Applica smoothing e stabilizzazione
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
                         ctx.imageSmoothingEnabled = true;
                         ctx.imageSmoothingQuality = 'high';
                         
-                        // Disegna con stabilizzazione
                         ctx.drawImage(
                             video,
                             Math.round(zoomArea.x), Math.round(zoomArea.y),
