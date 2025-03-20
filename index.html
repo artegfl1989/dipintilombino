@@ -42,40 +42,42 @@
     <h1>Super Zoom Cam Android</h1>
     <video id="camera" autoplay></video>
     <button id="start-camera">Avvia Fotocamera</button>
-    <button id="zoom-in">Zoom In</button>
-    <button id="zoom-out">Zoom Out</button>
+    <button id="zoom-50x">Zoom 50x</button>
+    <button id="zoom-200x">Zoom 200x</button>
+    <button id="zoom-1000x">Zoom 1000x</button>
 
     <script>
         const video = document.getElementById('camera');
         const startButton = document.getElementById('start-camera');
         let track = null;
-        let zoomLevel = 1;
 
         startButton.addEventListener('click', async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { exact: "environment" } } // Specifica la fotocamera posteriore
+                    video: { facingMode: { exact: "environment" } } // Usa la fotocamera posteriore
                 });
                 video.srcObject = stream;
-                track = stream.getVideoTracks()[0]; // Accediamo alla traccia video
+                track = stream.getVideoTracks()[0]; // Otteniamo la traccia video
             } catch (error) {
                 console.error('Errore nell\'accedere alla fotocamera:', error);
             }
         });
 
-        document.getElementById('zoom-in').addEventListener('click', () => {
+        // Funzioni per i diversi livelli di zoom
+        function setZoom(level) {
             if (track && track.getCapabilities().zoom) {
-                zoomLevel = Math.min(zoomLevel + 0.1, track.getCapabilities().zoom.max);
+                const capabilities = track.getCapabilities();
+                const zoomLevel = Math.min(Math.max(level, capabilities.zoom.min), capabilities.zoom.max);
                 track.applyConstraints({ advanced: [{ zoom: zoomLevel }] });
+                console.log(`Zoom impostato a ${zoomLevel}x`);
+            } else {
+                console.warn('Lo zoom non è supportato su questo dispositivo.');
             }
-        });
+        }
 
-        document.getElementById('zoom-out').addEventListener('click', () => {
-            if (track && track.getCapabilities().zoom) {
-                zoomLevel = Math.max(zoomLevel - 0.1, track.getCapabilities().zoom.min);
-                track.applyConstraints({ advanced: [{ zoom: zoomLevel }] });
-            }
-        });
+        document.getElementById('zoom-50x').addEventListener('click', () => setZoom(50));
+        document.getElementById('zoom-200x').addEventListener('click', () => setZoom(200));
+        document.getElementById('zoom-1000x').addEventListener('click', () => setZoom(1000));
     </script>
 </body>
 </html>
