@@ -39,7 +39,9 @@
                 
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
-                await video.play();
+                video.setAttribute('autoplay', '');
+                video.setAttribute('playsinline', '');
+                await video.play().catch(() => {});
                 
                 document.getElementById('zoom-in').onclick = () => {
                     currentZoom = 200;
@@ -49,12 +51,11 @@
                 };
                 
             } catch (err) {
-                console.error(err);
-                alert('Attiva la fotocamera posteriore');
+                console.log('Camera init:', err);
             }
         }
 
-        window.onload = initCamera;
+        document.addEventListener('DOMContentLoaded', initCamera);
     </script>
 </body>
 </html>
