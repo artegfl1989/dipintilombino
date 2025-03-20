@@ -94,7 +94,7 @@
 
                 // Gestione zoom semplificata
                 document.getElementById('zoom-in').onclick = () => {
-                    currentZoom += 50;
+                    currentZoom += 5;  // Cambiato da 50 a 5
                     if (currentZoom > maxZoom) currentZoom = maxZoom;
                     video.style.transform = `scale(${currentZoom})`;
                     document.getElementById('zoom-level').textContent = `${currentZoom}x`;
