@@ -112,15 +112,42 @@
                 const mimeType = MediaRecorder.isTypeSupported('video/webm; codecs=vp8,opus') 
                     ? 'video/webm; codecs=vp8,opus'
                     : 'video/webm';
-                    
-                mediaRecorder = new MediaRecorder(stream, {
+                
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 3840;
+                canvas.height = 2160;
+                
+                const zoomedStream = canvas.captureStream(30);
+                mediaRecorder = new MediaRecorder(zoomedStream, {
                     mimeType: mimeType,
-                    videoBitsPerSecond: 2500000
+                    videoBitsPerSecond: 8000000
                 });
                 
                 document.getElementById('record').onclick = () => {
                     recordedChunks = [];
-                    mediaRecorder.start(100);
+                    const video = document.getElementById('camera');
+                    
+                    // Funzione per catturare i frame con zoom
+                    const drawFrame = () => {
+                        const zoomArea = {
+                            width: video.videoWidth / currentZoom,
+                            height: video.videoHeight / currentZoom,
+                            x: (video.videoWidth - video.videoWidth / currentZoom) / 2,
+                            y: (video.videoHeight - video.videoHeight / currentZoom) / 2
+                        };
+                        
+                        ctx.drawImage(video, 
+                            zoomArea.x, zoomArea.y, zoomArea.width, zoomArea.height,
+                            0, 0, canvas.width, canvas.height
+                        );
+                        if (mediaRecorder.state === 'recording') {
+                            requestAnimationFrame(drawFrame);
+                        }
+                    };
+                    
+                    mediaRecorder.start();
+                    drawFrame();
                     document.getElementById('record').style.display = 'none';
                     document.getElementById('stop').style.display = 'block';
                 };
