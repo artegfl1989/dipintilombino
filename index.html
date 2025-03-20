@@ -86,41 +86,42 @@
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         width: { ideal: 1920 },
-                        height: { ideal: 1080 },
-                        advanced: [{
-                            exposureMode: "manual",
-                            exposureTime: currentExposure
-                        }]
+                        height: { ideal: 1080 }
                     }
                 });
                 
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
                 const track = stream.getVideoTracks()[0];
+                const capabilities = track.getCapabilities();
+                const settings = track.getSettings();
                 
-                document.getElementById('exposure-up').onclick = async () => {
-                    currentExposure += 100;
-                    try {
-                        await track.applyConstraints({
-                            advanced: [{ exposureTime: currentExposure }]
-                        });
-                    } catch(e) {
-                        console.log('Exposure limit reached');
-                    }
-                };
-
-                document.getElementById('exposure-down').onclick = async () => {
-                    if (currentExposure > 100) {
-                        currentExposure -= 100;
+                if ('brightness' in capabilities) {
+                    document.getElementById('exposure-up').onclick = async () => {
+                        const current = settings.brightness || 0;
                         try {
                             await track.applyConstraints({
-                                advanced: [{ exposureTime: currentExposure }]
+                                advanced: [{ brightness: Math.min(current + 0.1, capabilities.brightness.max) }]
                             });
                         } catch(e) {
-                            console.log('Exposure limit reached');
+                            console.log('Brightness limit reached');
                         }
-                    }
-                };
+                    };
+
+                    document.getElementById('exposure-down').onclick = async () => {
+                        const current = settings.brightness || 0;
+                        try {
+                            await track.applyConstraints({
+                                advanced: [{ brightness: Math.max(current - 0.1, capabilities.brightness.min) }]
+                            });
+                        } catch(e) {
+                            console.log('Brightness limit reached');
+                        }
+                    };
+                } else {
+                    document.getElementById('exposure-up').style.display = 'none';
+                    document.getElementById('exposure-down').style.display = 'none';
+                }
 
                 await video.play();
                 // Gestione zoom semplificata
