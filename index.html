@@ -98,19 +98,26 @@
                 // Aggiunta cattura foto
                 document.getElementById('capture').onclick = () => {
                     const canvas = document.getElementById('photo');
+                    const video = document.getElementById('camera');
+                    
+                    // Imposta dimensioni canvas alla risoluzione del video
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
                     const ctx = canvas.getContext('2d');
                     
-                    // Cattura l'immagine con zoom
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const cropSize = canvas.width / currentZoom;
+                    // Calcola area di zoom
+                    const zoomArea = {
+                        width: canvas.width / currentZoom,
+                        height: canvas.height / currentZoom,
+                        x: (canvas.width - canvas.width / currentZoom) / 2,
+                        y: (canvas.height - canvas.height / currentZoom) / 2
+                    };
                     
+                    // Applica zoom e cattura
                     ctx.drawImage(
                         video,
-                        centerX - cropSize/2, centerY - cropSize/2,
-                        cropSize, cropSize,
+                        zoomArea.x, zoomArea.y,
+                        zoomArea.width, zoomArea.height,
                         0, 0,
                         canvas.width, canvas.height
                     );
