@@ -85,28 +85,42 @@
 
         async function initCamera() {
             try {
-                // Richiesta base della fotocamera
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: false
+                    video: {
+                        facingMode: { exact: "environment" }, // Forza la camera posteriore
+                        width: { ideal: 3840 }, // 4K resolution
+                        height: { ideal: 2160 }
+                    }
                 });
                 
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
                 
-                // Assicuriamoci che il video parta
-                await video.play();
-                
                 const track = stream.getVideoTracks()[0];
-                console.log('Fotocamera attiva:', track.label);
+                console.log('Camera posteriore attiva:', track.label);
                 
-                // Aggiungiamo i controlli base
+                // Configurazione zoom
+                const zoomIn = document.getElementById('zoom-in');
+                zoomIn.onclick = () => {
+                    try {
+                        currentZoom = Math.min(currentZoom + 500, 20000);
+                        track.applyConstraints({
+                            advanced: [{
+                                zoom: currentZoom
+                            }]
+                        });
+                        const kmDistance = (currentZoom / 1000).toFixed(1);
+                        document.getElementById('zoom-level').textContent = `Distanza: ${kmDistance}km`;
+                    } catch (e) {
+                        console.log('Errore zoom:', e);
+                    }
+                };
+
                 document.getElementById('capture').onclick = capturePhoto;
                 document.getElementById('record').onclick = toggleRecording;
-                
             } catch (err) {
-                console.error('Errore fotocamera:', err);
-                alert('Per favore attiva i permessi della fotocamera e ricarica la pagina');
+                console.error('Errore camera:', err);
+                alert('Attiva la fotocamera posteriore');
             }
         }
 
