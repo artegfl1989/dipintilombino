@@ -21,7 +21,10 @@
             top: 0;
             left: 0;
             transform-origin: center;
-            transition: transform 0.3s ease;
+            transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
         #zoom-level {
             position: fixed;
@@ -89,8 +92,9 @@
                         width: { ideal: 3840 },
                         height: { ideal: 2160 },
                         advanced: [{
-                            imageStabilizationMode: "auto",
-                            videoStabilizationMode: "auto"
+                            imageStabilizationMode: "max",
+                            videoStabilizationMode: "max",
+                            stabilizationLevel: 1.0
                         }]
                     }
                 });
@@ -98,7 +102,28 @@
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
                 const track = stream.getVideoTracks()[0];
-                
+
+                // Stabilizzazione aggiuntiva
+                let lastZoom = currentZoom;
+                let stabilizationTimer;
+
+                function updateZoom(newZoom) {
+                    currentZoom = newZoom;
+                    clearTimeout(stabilizationTimer);
+                    stabilizationTimer = setTimeout(() => {
+                        video.style.transform = `scale(${currentZoom})`;
+                    }, 50);
+                }
+
+                document.getElementById('zoom-in').onclick = () => {
+                    updateZoom(Math.min(currentZoom + 5, maxZoom));
+                    document.getElementById('zoom-level').textContent = `${currentZoom}x`;
+                };
+
+                document.getElementById('zoom-max').onclick = () => {
+                    updateZoom(maxZoom);
+                    document.getElementById('zoom-level').textContent = '180x 🔭';
+                };
                 // Applica stabilizzazione massima
                 try {
                     await track.applyConstraints({
