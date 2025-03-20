@@ -58,6 +58,7 @@
     <div id="zoom-level">1x</div>
     <div class="controls">
         <button id="zoom-in">🔭 SUPER ZOOM</button>
+        <button id="zoom-out">🔽 ZOOM OUT</button>
     </div>
 
     <script>
@@ -83,6 +84,13 @@
                     video.style.transform = `scale(${currentZoom})`;
                     video.style.transformOrigin = '50% 50%';
                     document.getElementById('zoom-level').textContent = '1000x 🌌';
+                };
+
+                document.getElementById('zoom-out').onclick = () => {
+                    currentZoom = Math.max(currentZoom - 5, 1);
+                    video.style.transform = `scale(${currentZoom})`;
+                    video.style.transformOrigin = '50% 50%';
+                    document.getElementById('zoom-level').textContent = currentZoom + 'x';
                 };
             } catch (err) {}
         }
