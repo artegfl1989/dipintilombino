@@ -19,50 +19,36 @@
             position: fixed;
             top: 0;
             left: 0;
-        }
-        .controls {
-            position: fixed;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            padding: 10px;
-            z-index: 1000;
-        }
-        button {
-            padding: 15px 30px;
-            border-radius: 25px;
-            border: none;
-            background: rgba(255, 255, 255, 0.3);
-            color: white;
-            backdrop-filter: blur(5px);
-            font-size: 18px;
-        }
-        #zoom-level {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            color: white;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 5px 10px;
-            border-radius: 5px;
-            z-index: 1000;
+            transform-origin: center;
+            transition: transform 0.3s ease;
         }
     </style>
-</head>
-<body>
-    <video id="camera" autoplay playsinline></video>
-    <div id="zoom-level">Zoom: 1x</div>
-    <div class="controls">
-        <button id="zoom-in">+ Zoom</button>
-        <button id="capture">📸</button>
-        <button id="record">🎥</button>
-    </div>
 
     <script>
         let currentZoom = 1;
+
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { exact: "environment" }
+                    }
+                });
+                
+                const video = document.getElementById('camera');
+                video.srcObject = stream;
+                
+                // Zoom digitale
+                document.getElementById('zoom-in').onclick = () => {
+                    currentZoom = Math.min(currentZoom + 2, 20);
+                    video.style.transform = `scale(${currentZoom})`;
+                    document.getElementById('zoom-level').textContent = 
+                        `${currentZoom.toFixed(1)} KM`;
+                };
+            } catch (err) {
+                alert('Attiva la fotocamera posteriore');
+            }
+        }
         let isRecording = false;
         let mediaRecorder = null;
 
