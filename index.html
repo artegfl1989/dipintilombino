@@ -85,42 +85,42 @@
 
         async function initCamera() {
             try {
+                // Richiediamo la camera posteriore con massima risoluzione
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: { exact: "environment" }, // Forza la camera posteriore
-                        width: { ideal: 3840 }, // 4K resolution
-                        height: { ideal: 2160 }
+                        facingMode: { exact: "environment" },
+                        width: { ideal: 4096 },
+                        height: { ideal: 2160 },
+                        zoom: true
                     }
                 });
                 
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
+                await video.play();
                 
                 const track = stream.getVideoTracks()[0];
-                console.log('Camera posteriore attiva:', track.label);
                 
-                // Configurazione zoom
+                // Zoom massimo con un solo click
                 const zoomIn = document.getElementById('zoom-in');
                 zoomIn.onclick = () => {
+                    currentZoom = 20000; // Zoom massimo diretto
                     try {
-                        currentZoom = Math.min(currentZoom + 500, 20000);
                         track.applyConstraints({
                             advanced: [{
                                 zoom: currentZoom
                             }]
                         });
-                        const kmDistance = (currentZoom / 1000).toFixed(1);
-                        document.getElementById('zoom-level').textContent = `Distanza: ${kmDistance}km`;
+                        document.getElementById('zoom-level').textContent = `Distanza: 20km`;
                     } catch (e) {
-                        console.log('Errore zoom:', e);
+                        alert('Prova a riavviare la pagina per lo zoom massimo');
                     }
                 };
 
-                document.getElementById('capture').onclick = capturePhoto;
-                document.getElementById('record').onclick = toggleRecording;
+                // Nascondiamo il pulsante zoom-out
+                document.getElementById('zoom-out').style.display = 'none';
             } catch (err) {
-                console.error('Errore camera:', err);
-                alert('Attiva la fotocamera posteriore');
+                alert('Riavvia e dai i permessi alla fotocamera posteriore');
             }
         }
 
