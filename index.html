@@ -31,20 +31,18 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: { exact: "environment" }
+                        facingMode: "environment",
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
                     }
                 });
                 
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
+                await video.play();
                 
-                document.getElementById('zoom-in').onclick = () => {
-                    currentZoom = 200;  // Zoom fisso a 200x
-                    video.style.transform = `scale(${currentZoom})`;
-                    document.getElementById('zoom-level').textContent = 
-                        `${currentZoom}x`;
-                };
             } catch (err) {
+                console.error(err);
                 alert('Attiva la fotocamera posteriore');
             }
         }
