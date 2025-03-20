@@ -109,19 +109,20 @@
                 };
 
                 // Registrazione video
-                mediaRecorder = new MediaRecorder(stream);
+                const mimeType = MediaRecorder.isTypeSupported('video/webm; codecs=vp8,opus') 
+                    ? 'video/webm; codecs=vp8,opus'
+                    : 'video/webm';
+                    
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: mimeType,
+                    videoBitsPerSecond: 2500000
+                });
                 
                 document.getElementById('record').onclick = () => {
                     recordedChunks = [];
-                    mediaRecorder.start();
+                    mediaRecorder.start(100);
                     document.getElementById('record').style.display = 'none';
                     document.getElementById('stop').style.display = 'block';
-                };
-
-                document.getElementById('stop').onclick = () => {
-                    mediaRecorder.stop();
-                    document.getElementById('stop').style.display = 'none';
-                    document.getElementById('record').style.display = 'block';
                 };
 
                 mediaRecorder.ondataavailable = (e) => {
@@ -129,15 +130,18 @@
                 };
 
                 mediaRecorder.onstop = () => {
-                    const blob = new Blob(recordedChunks, {
-                        type: 'video/webm'
-                    });
+                    const blob = new Blob(recordedChunks, { type: mimeType });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
+                    a.style.display = 'none';
                     a.href = url;
-                    a.download = `Telescopio-4K-${currentZoom}x.webm`;
+                    a.download = `Telescopio-Video-${currentZoom}x.webm`;
+                    document.body.appendChild(a);
                     a.click();
-                    URL.revokeObjectURL(url);
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 100);
                 };
             } catch (err) {
                 console.error('Camera error:', err);
