@@ -57,11 +57,12 @@
     <video id="camera" autoplay playsinline></video>
     <div id="zoom-level">1x</div>
     <div class="controls">
-        <button id="zoom-in">🔭 ZOOM MAX</button>
+        <button id="zoom-in">🔭 ZOOM +</button>
+        <button id="zoom-max">🌌 MAX 1000x</button>
         <button id="record">📹 REC</button>
         <button id="stop" style="display:none">⏹️ STOP</button>
     </div>
-    
+
         <script>
             let currentZoom = 1;
             const maxZoom = 1000;
@@ -88,6 +89,13 @@
                     
                     // Gestione zoom
                     document.getElementById('zoom-in').onclick = () => {
+                        currentZoom = Math.min(currentZoom + 50, maxZoom);
+                        video.style.transform = `scale(${currentZoom})`;
+                        document.getElementById('zoom-level').textContent = `${currentZoom}x`;
+                    };
+    
+                    // Zoom massimo diretto
+                    document.getElementById('zoom-max').onclick = () => {
                         currentZoom = maxZoom;
                         video.style.transform = `scale(${currentZoom})`;
                         document.getElementById('zoom-level').textContent = '1000x 🌌';
