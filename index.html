@@ -98,32 +98,30 @@
                 // Aggiunta cattura foto
                 document.getElementById('capture').onclick = () => {
                     const canvas = document.getElementById('photo');
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
+                    canvas.width = 3840;  // 4K
+                    canvas.height = 2160; // 4K
                     const ctx = canvas.getContext('2d');
                     
-                    // Pulisci il canvas
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    // Calcola l'area di ritaglio per lo zoom
+                    const zoomWidth = canvas.width / currentZoom;
+                    const zoomHeight = canvas.height / currentZoom;
+                    const startX = (canvas.width - zoomWidth) / 2;
+                    const startY = (canvas.height - zoomHeight) / 2;
                     
-                    // Applica lo zoom corrente al canvas
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    ctx.translate(centerX, centerY);
-                    ctx.scale(currentZoom, currentZoom);
-                    ctx.translate(-centerX, -centerY);
+                    // Cattura l'immagine con zoom
+                    ctx.drawImage(
+                        video,
+                        startX, startY, zoomWidth, zoomHeight,  // Area di origine
+                        0, 0, canvas.width, canvas.height        // Area di destinazione
+                    );
                     
-                    // Cattura l'immagine con lo zoom
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
-                    // Download automatico
+                    // Download in alta qualità
                     canvas.toBlob((blob) => {
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
                         a.download = `Telescopio-4K-${currentZoom}x.png`;
-                        document.body.appendChild(a);
                         a.click();
-                        document.body.removeChild(a);
                         URL.revokeObjectURL(url);
                     }, 'image/png', 1.0);
                 };
