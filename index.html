@@ -138,19 +138,9 @@
                 };
 
                 mediaRecorder.onstop = () => {
-                    const canvas = document.createElement('canvas');
-                    const video = document.getElementById('camera');
-                    
-                    // Mantieni risoluzione 4K
-                    canvas.width = 3840;
-                    canvas.height = 2160;
-                    
-                    const ctx = canvas.getContext('2d');
-                    ctx.scale(currentZoom, currentZoom);
-                    
                     const blob = new Blob(recordedChunks, {
                         type: mimeType,
-                        videoBitsPerSecond: 8000000 // 8Mbps per 4K
+                        videoBitsPerSecond: 8000000
                     });
                     
                     const url = URL.createObjectURL(blob);
@@ -160,6 +150,12 @@
                     a.download = `Telescopio-4K-${Math.round(currentZoom)}x.webm`;
                     document.body.appendChild(a);
                     a.click();
+                    
+                    // Mantieni zoom corrente
+                    const video = document.getElementById('camera');
+                    video.style.transform = `scale(${currentZoom})`;
+                    document.getElementById('zoom-level').textContent = `${currentZoom}x`;
+                    
                     setTimeout(() => {
                         document.body.removeChild(a);
                         URL.revokeObjectURL(url);
