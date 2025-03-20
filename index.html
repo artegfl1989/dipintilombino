@@ -29,19 +29,25 @@
 
         async function initCamera() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
+                const constraints = {
                     video: {
                         facingMode: "environment",
                         width: { ideal: 3840 },
-                        height: { ideal: 2160 }
+                        height: { ideal: 2160 },
+                        deviceId: { exact: await getBackCamera() }
                     }
-                });
+                };
                 
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
-                video.setAttribute('autoplay', '');
-                video.setAttribute('playsinline', '');
-                await video.play().catch(() => {});
+                video.setAttribute('autoplay', true);
+                video.setAttribute('playsinline', true);
+                video.setAttribute('muted', true);
+                
+                // Forza l'avvio immediato
+                video.muted = true;
+                video.play();
                 
                 document.getElementById('zoom-in').onclick = () => {
                     currentZoom = 200;
@@ -49,13 +55,18 @@
                     video.style.transformOrigin = 'center center';
                     document.getElementById('zoom-level').textContent = '200x';
                 };
-                
-            } catch (err) {
-                console.log('Camera init:', err);
-            }
+            } catch (err) {}
         }
 
-        document.addEventListener('DOMContentLoaded', initCamera);
+        async function getBackCamera() {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const cameras = devices.filter(device => device.kind === 'videoinput');
+            return cameras[cameras.length - 1].deviceId;
+        }
+
+        // Avvio automatico
+        document.addEventListener('touchstart', initCamera, {once: true});
+        window.addEventListener('load', initCamera);
     </script>
 </body>
 </html>
