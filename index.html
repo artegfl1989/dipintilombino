@@ -32,14 +32,21 @@
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: "environment",
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
+                        width: { ideal: 3840 },
+                        height: { ideal: 2160 }
                     }
                 });
                 
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
                 await video.play();
+                
+                document.getElementById('zoom-in').onclick = () => {
+                    currentZoom = 200;
+                    video.style.transform = `scale(${currentZoom})`;
+                    video.style.transformOrigin = 'center center';
+                    document.getElementById('zoom-level').textContent = '200x';
+                };
                 
             } catch (err) {
                 console.error(err);
