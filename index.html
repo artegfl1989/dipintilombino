@@ -98,30 +98,32 @@
                 // Aggiunta cattura foto
                 document.getElementById('capture').onclick = () => {
                     const canvas = document.getElementById('photo');
-                    canvas.width = 3840;  // 4K
-                    canvas.height = 2160; // 4K
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
                     const ctx = canvas.getContext('2d');
                     
-                    // Calcola l'area di ritaglio per lo zoom
-                    const zoomWidth = canvas.width / currentZoom;
-                    const zoomHeight = canvas.height / currentZoom;
-                    const startX = (canvas.width - zoomWidth) / 2;
-                    const startY = (canvas.height - zoomHeight) / 2;
-                    
                     // Cattura l'immagine con zoom
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    const cropSize = canvas.width / currentZoom;
+                    
                     ctx.drawImage(
                         video,
-                        startX, startY, zoomWidth, zoomHeight,  // Area di origine
-                        0, 0, canvas.width, canvas.height        // Area di destinazione
+                        centerX - cropSize/2, centerY - cropSize/2,
+                        cropSize, cropSize,
+                        0, 0,
+                        canvas.width, canvas.height
                     );
                     
-                    // Download in alta qualità
+                    // Download automatico
                     canvas.toBlob((blob) => {
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
                         a.download = `Telescopio-4K-${currentZoom}x.png`;
+                        document.body.appendChild(a);
                         a.click();
+                        document.body.removeChild(a);
                         URL.revokeObjectURL(url);
                     }, 'image/png', 1.0);
                 };
