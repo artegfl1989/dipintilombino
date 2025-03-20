@@ -70,7 +70,6 @@
     <div class="controls">
         <button id="zoom-in">🔭 ZOOM +</button>
         <button id="zoom-max">⭐ MAX</button>
-        <button id="capture">📸 FOTO</button>
         <button id="record">📹 REC</button>
         <button id="stop" style="display:none">⏹️ STOP</button>
     </div>
@@ -87,7 +86,8 @@
                     video: {
                         facingMode: { exact: "environment" },
                         width: { ideal: 3840 },
-                        height: { ideal: 2160 }
+                        height: { ideal: 2160 },
+                        frameRate: { ideal: 30 }
                     }
                 });
                 
@@ -95,104 +95,12 @@
                 video.srcObject = stream;
                 await video.play();
 
-                // Aggiungi stabilizzazione tipo immagine
-                video.style.transition = 'transform 5s ease';
-                let isStabilizing = false;
-
-                setInterval(() => {
-                    if (!isStabilizing) {
-                        isStabilizing = true;
-                        const microMove = 0.0001;
-                        video.style.transform = `scale(${currentZoom}) translate(${microMove}px, ${microMove}px)`;
-                        setTimeout(() => {
-                            video.style.transform = `scale(${currentZoom})`;
-                            isStabilizing = false;
-                        }, 5000);
-                    }
-                }, 10000);
-
-                // Aggiunta cattura foto
-                document.getElementById('capture').onclick = async () => {
-                    const canvas = document.getElementById('photo');
-                    const video = document.getElementById('camera');
-                    
-                    // Stabilizzazione avanzata
-                    video.style.transition = 'none';
-                    const currentTransform = video.style.transform;
-                    
-                    // Attendi stabilizzazione completa
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    const ctx = canvas.getContext('2d', { alpha: false, willReadFrequently: true });
-                    
-                    // Calcola area di zoom con stabilizzazione
-                    const zoomArea = {
-                        width: canvas.width / currentZoom,
-                        height: canvas.height / currentZoom,
-                        x: Math.max(0, (canvas.width - canvas.width / currentZoom) / 2),
-                        y: Math.max(0, (canvas.height - canvas.height / currentZoom) / 2)
-                    };
-                    
-                    ctx.imageSmoothingEnabled = false;
-                    ctx.drawImage(
-                        video,
-                        zoomArea.x, zoomArea.y,
-                        zoomArea.width, zoomArea.height,
-                        0, 0,
-                        canvas.width, canvas.height
-                    );
-                    
-                    // Ripristina transizione
-                    setTimeout(() => {
-                        video.style.transition = 'transform 0.3s ease';
-                        video.style.transform = currentTransform;
-                    }, 100);
-                    
-                    // Download automatico
-                    canvas.toBlob((blob) => {
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `Telescopio-4K-${currentZoom}x.png`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                    }, 'image/png', 1.0);
-                };
-
-                // Gestione zoom
-                document.getElementById('zoom-in').onclick = () => {
-                    currentZoom = Math.min(currentZoom + 30, maxZoom);
-                    video.style.transform = `scale(${currentZoom})`;
-                    document.getElementById('zoom-level').textContent = `${currentZoom}x`;
-                };
-
-                document.getElementById('zoom-max').onclick = () => {
-                    currentZoom = maxZoom;
-                    video.style.transform = `scale(${maxZoom})`;
-                    document.getElementById('zoom-level').textContent = '1000x 🌌';
-                };
-
-                // Inizializza registrazione
-                mediaRecorder = new MediaRecorder(stream);
+                // Inizializza registrazione in alta qualità
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: 'video/webm;codecs=vp9',
+                    videoBitsPerSecond: 8000000 // 8 Mbps per 4K
+                });
                 
-                // Gestione zoom
-                document.getElementById('zoom-in').onclick = () => {
-                    currentZoom = Math.min(currentZoom + 50, maxZoom);
-                    video.style.transform = `scale(${currentZoom})`;
-                    document.getElementById('zoom-level').textContent = `${currentZoom}x`;
-                };
-
-                // Zoom massimo diretto
-                document.getElementById('zoom-max').onclick = () => {
-                    currentZoom = maxZoom;
-                    video.style.transform = `scale(${currentZoom})`;
-                    document.getElementById('zoom-level').textContent = '1000x 🌌';
-                };
-
                 // Gestione registrazione
                 document.getElementById('record').onclick = () => {
                     recordedChunks = [];
@@ -212,12 +120,17 @@
                 };
 
                 mediaRecorder.onstop = () => {
-                    const blob = new Blob(recordedChunks, {type: 'video/webm'});
+                    const blob = new Blob(recordedChunks, {
+                        type: 'video/webm;codecs=vp9'
+                    });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'SuperZoom-Video.webm';
+                    a.download = `Telescopio-4K-${currentZoom}x.webm`;
+                    document.body.appendChild(a);
                     a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
                 };
             } catch (err) {
                 console.error('Camera error:', err);
