@@ -125,6 +125,14 @@
                     document.getElementById('stop').style.display = 'block';
                 };
 
+                document.getElementById('stop').onclick = () => {
+                    if (mediaRecorder.state !== 'inactive') {
+                        mediaRecorder.stop();
+                        document.getElementById('stop').style.display = 'none';
+                        document.getElementById('record').style.display = 'block';
+                    }
+                };
+
                 mediaRecorder.ondataavailable = (e) => {
                     if (e.data.size > 0) recordedChunks.push(e.data);
                 };
