@@ -19,6 +19,7 @@
             overflow: hidden;
  zoom deve funionare realnente         }
         <style>
+            /* Rimuovo stile duplicato e corretto */
             #camera {
                 position: fixed;
                 top: 0;
@@ -100,44 +101,38 @@
                 
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
+                await video.play();
                 
                 const track = stream.getVideoTracks()[0];
                 const capabilities = track.getCapabilities();
+                console.log('Capacità:', capabilities);
                 
-                if (capabilities.zoom) {
-                    const zoomIn = document.getElementById('zoom-in');
-                    const zoomOut = document.getElementById('zoom-out');
-                    
-                    // Verifica il range di zoom supportato
-                    const maxZoom = capabilities.zoom.max || 20000;
-                    const minZoom = capabilities.zoom.min || 1;
-                    
-                    zoomIn.onclick = async () => {
-                        try {
-                            currentZoom = Math.min(currentZoom * 2, maxZoom);
-                            await track.applyConstraints({
-                                advanced: [{
-                                    zoom: currentZoom
-                                }]
-                            });
-                            const settings = track.getSettings();
-                            console.log('Zoom attuale:', settings.zoom);
-                            document.getElementById('zoom-level').textContent = 
-                                `Zoom: ${(settings.zoom/1000).toFixed(1)}km`;
-                        } catch (e) {
-                            console.error('Zoom error:', e);
-                        }
-                    };
-                } else {
-                    alert('Il tuo dispositivo non supporta lo zoom della fotocamera');
-                }
+                const zoomIn = document.getElementById('zoom-in');
+                zoomIn.onclick = async () => {
+                    try {
+                        currentZoom *= 2;
+                        if (currentZoom > 20000) currentZoom = 20000;
+                        
+                        await track.applyConstraints({
+                            advanced: [{
+                                zoom: currentZoom
+                            }]
+                        });
+                        
+                        document.getElementById('zoom-level').textContent = 
+                            `Distanza: ${(currentZoom/1000).toFixed(1)}km`;
+                    } catch (e) {
+                        console.error('Errore zoom:', e);
+                    }
+                };
             } catch (err) {
+                console.error('Errore camera:', err);
                 alert('Attiva la fotocamera posteriore');
             }
         }
 
-        // Inizializza la fotocamera quando la pagina è caricata
-        window.addEventListener('DOMContentLoaded', initCamera);
+        // Inizializzazione corretta
+        document.addEventListener('DOMContentLoaded', initCamera);
     </script>
 
         function updateZoomDisplay() {
