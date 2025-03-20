@@ -103,16 +103,33 @@
 
                 // Gestione zoom
                 document.getElementById('zoom-in').onclick = () => {
-                    currentZoom = Math.min(currentZoom * 1.5, maxZoom);
+                    currentZoom = Math.min(currentZoom + 100, maxZoom);
                     video.style.transform = `scale(${currentZoom})`;
-                    document.getElementById('zoom-level').textContent = `${Math.round(currentZoom)}x`;
+                    video.style.transformOrigin = 'center center';
+                    document.getElementById('zoom-level').textContent = `${currentZoom}x`;
                 };
 
                 document.getElementById('zoom-max').onclick = () => {
                     currentZoom = maxZoom;
                     video.style.transform = `scale(${maxZoom})`;
+                    video.style.transformOrigin = 'center center';
                     document.getElementById('zoom-level').textContent = '1000x 🌌';
                 };
+
+                // Aggiungi gestione zoom con touch
+                let touchStartY = 0;
+                video.addEventListener('touchstart', (e) => {
+                    touchStartY = e.touches[0].clientY;
+                });
+
+                video.addEventListener('touchmove', (e) => {
+                    const touchY = e.touches[0].clientY;
+                    const diff = touchStartY - touchY;
+                    currentZoom = Math.min(Math.max(1, currentZoom + diff/10), maxZoom);
+                    video.style.transform = `scale(${currentZoom})`;
+                    document.getElementById('zoom-level').textContent = `${Math.round(currentZoom)}x`;
+                    touchStartY = touchY;
+                });
 
                 // Gestione registrazione migliorata
                 document.getElementById('record').onclick = () => {
