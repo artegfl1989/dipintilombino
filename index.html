@@ -117,6 +117,34 @@
                 canvas.width = 3840;
                 canvas.height = 2160;
                 
+                let timerActive = false;
+                let countdownInterval;
+                
+                document.getElementById('timer').onclick = () => {
+                    if (timerActive) {
+                        clearInterval(countdownInterval);
+                        timerActive = false;
+                        document.getElementById('timer').textContent = '⏲️ 20s';
+                        return;
+                    }
+                    
+                    timerActive = true;
+                    let seconds = 20;
+                    document.getElementById('timer').textContent = `⏲️ ${seconds}s`;
+                    
+                    countdownInterval = setInterval(() => {
+                        seconds--;
+                        document.getElementById('timer').textContent = `⏲️ ${seconds}s`;
+                        
+                        if (seconds <= 0) {
+                            clearInterval(countdownInterval);
+                            document.getElementById('capture').click();
+                            document.getElementById('timer').textContent = '⏲️ 20s';
+                            timerActive = false;
+                        }
+                    }, 1000);
+                };
+                
                 document.getElementById('capture').onclick = () => {
                     const zoomArea = {
                         width: video.videoWidth / currentZoom,
