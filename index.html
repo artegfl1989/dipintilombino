@@ -70,7 +70,8 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: { exact: "environment" }
+                        facingMode: { exact: "environment" },
+                        zoom: true
                     }
                 });
                 
@@ -78,42 +79,45 @@
                 video.srcObject = stream;
                 
                 const track = stream.getVideoTracks()[0];
+                const capabilities = track.getCapabilities();
+                console.log('Camera capabilities:', capabilities);
                 
                 document.getElementById('zoom-in').onclick = async () => {
                     try {
-                        currentZoom *= 2;
-                        if(currentZoom > 20000) currentZoom = 20000;
+                        currentZoom = Math.min(currentZoom + 2000, 20000);
                         
                         await track.applyConstraints({
-                            advanced: [{ zoom: currentZoom }]
+                            advanced: [{ 
+                                zoom: currentZoom,
+                                exposureMode: 'manual',
+                                exposureTime: 1000
+                            }]
                         });
                         
                         document.getElementById('zoom-level').textContent = 
                             `${(currentZoom/1000).toFixed(1)}km`;
                     } catch (e) {
-                        console.log('Zoom:', e);
+                        console.log('Zoom error:', e);
                     }
                 };
-
-                document.getElementById('capture').onclick = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    canvas.getContext('2d').drawImage(video, 0, 0);
-                    canvas.toBlob(blob => {
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'foto.jpg';
-                        a.click();
-                    }, 'image/jpeg');
-                };
             } catch (err) {
-                alert('Attiva la fotocamera posteriore');
+                alert('Enable rear camera');
             }
         }
 
-        initCamera();
-    </script>
+        document.getElementById('capture').onclick = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'foto.jpg';
+                a.click();
+            }, 'image/jpeg');
+        };
+    }
 </body>
 </html>
