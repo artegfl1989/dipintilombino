@@ -86,8 +86,7 @@
                     video: {
                         facingMode: { exact: "environment" },
                         width: { ideal: 3840 },
-                        height: { ideal: 2160 },
-                        frameRate: { ideal: 30 }
+                        height: { ideal: 2160 }
                     }
                 });
                 
@@ -95,60 +94,30 @@
                 video.srcObject = stream;
                 await video.play();
 
-                // Inizializza registrazione in alta qualità
-                mediaRecorder = new MediaRecorder(stream, {
-                    mimeType: 'video/mp4;codecs=h264',
-                    videoBitsPerSecond: 8000000
-                });
-
-                // Gestione zoom
+                // Gestione zoom semplificata
                 document.getElementById('zoom-in').onclick = () => {
-                    currentZoom = Math.min(currentZoom + 100, maxZoom);
+                    currentZoom += 50;
+                    if (currentZoom > maxZoom) currentZoom = maxZoom;
                     video.style.transform = `scale(${currentZoom})`;
-                    video.style.transformOrigin = 'center center';
                     document.getElementById('zoom-level').textContent = `${currentZoom}x`;
                 };
 
                 document.getElementById('zoom-max').onclick = () => {
                     currentZoom = maxZoom;
                     video.style.transform = `scale(${maxZoom})`;
-                    video.style.transformOrigin = 'center center';
                     document.getElementById('zoom-level').textContent = '1000x 🌌';
                 };
 
-                // Aggiungi gestione zoom con touch
-                let touchStartY = 0;
-                video.addEventListener('touchstart', (e) => {
-                    touchStartY = e.touches[0].clientY;
-                });
-
-                video.addEventListener('touchmove', (e) => {
-                    const touchY = e.touches[0].clientY;
-                    const diff = touchStartY - touchY;
-                    currentZoom = Math.min(Math.max(1, currentZoom + diff/10), maxZoom);
-                    video.style.transform = `scale(${currentZoom})`;
-                    document.getElementById('zoom-level').textContent = `${Math.round(currentZoom)}x`;
-                    touchStartY = touchY;
-                });
-
-                // Gestione registrazione migliorata
+                // Registrazione video
+                mediaRecorder = new MediaRecorder(stream);
+                
                 document.getElementById('record').onclick = () => {
                     recordedChunks = [];
-                    mediaRecorder.start(1000); // Chunk ogni secondo
+                    mediaRecorder.start();
                     document.getElementById('record').style.display = 'none';
                     document.getElementById('stop').style.display = 'block';
                 };
 
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(recordedChunks, {
-                        type: 'video/mp4'
-                    });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `Telescopio-4K-${Math.round(currentZoom)}x.mp4`;
-                    a.click();
-                };
                 document.getElementById('stop').onclick = () => {
                     mediaRecorder.stop();
                     document.getElementById('stop').style.display = 'none';
@@ -161,15 +130,13 @@
 
                 mediaRecorder.onstop = () => {
                     const blob = new Blob(recordedChunks, {
-                        type: 'video/webm;codecs=vp9'
+                        type: 'video/webm'
                     });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
                     a.download = `Telescopio-4K-${currentZoom}x.webm`;
-                    document.body.appendChild(a);
                     a.click();
-                    document.body.removeChild(a);
                     URL.revokeObjectURL(url);
                 };
             } catch (err) {
