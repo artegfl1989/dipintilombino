@@ -70,15 +70,12 @@
     <div class="controls">
         <button id="zoom-in">🔭 ZOOM +</button>
         <button id="zoom-max">⭐ MAX</button>
-        <button id="record">📹 REC</button>
-        <button id="stop" style="display:none">⏹️ STOP</button>
+        <button id="capture">📸 FOTO</button>
     </div>
 
     <script>
         let currentZoom = 1;
         const maxZoom = 1000;
-        let mediaRecorder;
-        let recordedChunks = [];
 
         async function initCamera() {
             try {
@@ -118,25 +115,14 @@
                 const ctx = canvas.getContext('2d', { alpha: false });
                 canvas.width = 3840;
                 canvas.height = 2160;
-                let lastX = 0, lastY = 0;
                 
-                const zoomedStream = canvas.captureStream(60);
-                mediaRecorder = new MediaRecorder(zoomedStream, {
-                    mimeType: mimeType,
-                    videoBitsPerSecond: 12000000
-                });
-
-                function drawFrame() {
-                    const video = document.getElementById('camera');
+                document.getElementById('capture').onclick = () => {
                     const zoomArea = {
                         width: video.videoWidth / currentZoom,
                         height: video.videoHeight / currentZoom,
                         x: (video.videoWidth - video.videoWidth / currentZoom) / 2,
                         y: (video.videoHeight - video.videoHeight / currentZoom) / 2
                     };
-                    
-                    zoomArea.x = lastX = lastX * 0.9 + zoomArea.x * 0.1;
-                    zoomArea.y = lastY = lastY * 0.9 + zoomArea.y * 0.1;
                     
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     ctx.imageSmoothingEnabled = true;
@@ -149,57 +135,19 @@
                         0, 0, canvas.width, canvas.height
                     );
                     
-                    if (mediaRecorder.state === 'recording') {
-                        requestAnimationFrame(drawFrame);
-                    }
-                }
-                
-                document.getElementById('record').onclick = () => {
-                    recordedChunks = [];
-                    lastX = (video.videoWidth - video.videoWidth / currentZoom) / 2;
-                    lastY = (video.videoHeight - video.videoHeight / currentZoom) / 2;
-                    
-                    mediaRecorder.start(1000);
-                    drawFrame();
-                    document.getElementById('record').style.display = 'none';
-                    document.getElementById('stop').style.display = 'block';
-                };
-
-                document.getElementById('stop').onclick = () => {
-                    if (mediaRecorder.state !== 'inactive') {
-                        mediaRecorder.stop();
-                        document.getElementById('stop').style.display = 'none';
-                        document.getElementById('record').style.display = 'block';
-                    }
-                };
-
-                mediaRecorder.ondataavailable = (e) => {
-                    if (e.data.size > 0) recordedChunks.push(e.data);
-                };
-
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(recordedChunks, {
-                        type: mimeType,
-                        videoBitsPerSecond: 8000000
-                    });
-                    
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = `Telescopio-4K-${Math.round(currentZoom)}x.webm`;
-                    document.body.appendChild(a);
-                    a.click();
-                    
-                    // Mantieni zoom corrente
-                    const video = document.getElementById('camera');
-                    video.style.transform = `scale(${currentZoom})`;
-                    document.getElementById('zoom-level').textContent = `${currentZoom}x`;
-                    
-                    setTimeout(() => {
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                    }, 100);
+                    canvas.toBlob((blob) => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = `Telescopio-4K-${Math.round(currentZoom)}x.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        setTimeout(() => {
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                        }, 100);
+                    }, 'image/png', 1.0);
                 };
             } catch (err) {
                 console.error('Camera error:', err);
