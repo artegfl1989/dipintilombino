@@ -54,20 +54,20 @@
         startButton.addEventListener('click', async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { exact: "environment" } } // Usa la fotocamera posteriore
+                    video: { facingMode: { exact: "environment" } }
                 });
                 video.srcObject = stream;
-                track = stream.getVideoTracks()[0]; // Otteniamo la traccia video
+                track = stream.getVideoTracks()[0];
             } catch (error) {
                 console.error('Errore nell\'accedere alla fotocamera:', error);
             }
         });
 
-        // Funzioni per i diversi livelli di zoom
         function setZoom(level) {
             if (track && track.getCapabilities().zoom) {
                 const capabilities = track.getCapabilities();
-                const zoomLevel = Math.min(Math.max(level, capabilities.zoom.min), capabilities.zoom.max);
+                const maxZoom = capabilities.zoom.max; // Livello massimo supportato dal dispositivo
+                const zoomLevel = Math.min(level, maxZoom); // Si assicura di non superare il massimo
                 track.applyConstraints({ advanced: [{ zoom: zoomLevel }] });
                 console.log(`Zoom impostato a ${zoomLevel}x`);
             } else {
