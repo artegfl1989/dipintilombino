@@ -100,25 +100,26 @@
                     const canvas = document.getElementById('photo');
                     const video = document.getElementById('camera');
                     
-                    // Aspetta che il video sia stabile
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    // Stabilizzazione avanzata
+                    video.style.transition = 'none';
+                    const currentTransform = video.style.transform;
+                    
+                    // Attendi stabilizzazione completa
+                    await new Promise(resolve => setTimeout(resolve, 500));
                     
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
-                    const ctx = canvas.getContext('2d', { alpha: false });
+                    const ctx = canvas.getContext('2d', { alpha: false, willReadFrequently: true });
                     
-                    // Calcola area di zoom
+                    // Calcola area di zoom con stabilizzazione
                     const zoomArea = {
                         width: canvas.width / currentZoom,
                         height: canvas.height / currentZoom,
-                        x: (canvas.width - canvas.width / currentZoom) / 2,
-                        y: (canvas.height - canvas.height / currentZoom) / 2
+                        x: Math.max(0, (canvas.width - canvas.width / currentZoom) / 2),
+                        y: Math.max(0, (canvas.height - canvas.height / currentZoom) / 2)
                     };
                     
-                    // Disabilita lo smoothing per una maggiore nitidezza
                     ctx.imageSmoothingEnabled = false;
-                    
-                    // Cattura con zoom
                     ctx.drawImage(
                         video,
                         zoomArea.x, zoomArea.y,
@@ -126,6 +127,12 @@
                         0, 0,
                         canvas.width, canvas.height
                     );
+                    
+                    // Ripristina transizione
+                    setTimeout(() => {
+                        video.style.transition = 'transform 0.3s ease';
+                        video.style.transform = currentTransform;
+                    }, 100);
                     
                     // Download automatico
                     canvas.toBlob((blob) => {
