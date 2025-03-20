@@ -20,7 +20,7 @@
             top: 0;
             left: 0;
             transform-origin: center;
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease;
         }
     </style>
 
@@ -38,12 +38,12 @@
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
                 
-                // Zoom digitale
+                // Zoom digitale potenziato
                 document.getElementById('zoom-in').onclick = () => {
-                    currentZoom = Math.min(currentZoom + 2, 20);
+                    currentZoom = Math.min(currentZoom + 10, 200);
                     video.style.transform = `scale(${currentZoom})`;
                     document.getElementById('zoom-level').textContent = 
-                        `${currentZoom.toFixed(1)} KM`;
+                        `${currentZoom.toFixed(0)}x`;
                 };
             } catch (err) {
                 alert('Attiva la fotocamera posteriore');
