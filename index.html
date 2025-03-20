@@ -90,9 +90,10 @@
                         facingMode: 'environment',
                         zoom: true,
                         advanced: [{
-                            focusMode: ['manual', 'continuous'],
+                            focusMode: 'manual',
                             focusDistance: 0.01,
-                            exposureMode: 'manual'
+                            exposureMode: 'manual',
+                            zoom: 20000
                         }]
                     }
                 });
@@ -104,10 +105,9 @@
                 
                 if (capabilities.zoom) {
                     const zoomIn = document.getElementById('zoom-in');
-                    const zoomOut = document.getElementById('zoom-out');
                     
                     zoomIn.onclick = () => {
-                        currentZoom = Math.min(currentZoom * 1.5, 3000);
+                        currentZoom = Math.min(currentZoom + 1000, 20000);
                         track.applyConstraints({
                             advanced: [{
                                 zoom: currentZoom,
@@ -117,8 +117,10 @@
                         });
                         updateZoomDisplay();
                     };
-                    
-                    zoomOut.onclick = () => {
+                }
+                const zoomOut = document.getElementById('zoom-out');
+                
+                zoomOut.onclick = () => {
                         currentZoom = Math.max(currentZoom / 1.5, 1);
                         track.applyConstraints({
                             advanced: [{
@@ -140,10 +142,8 @@
         }
 
         function updateZoomDisplay() {
-            const zoomText = currentZoom >= 1000 
-                ? `Zoom: ${(currentZoom/1000).toFixed(1)}km` 
-                : `Zoom: ${currentZoom.toFixed(1)}x`;
-            document.getElementById('zoom-level').textContent = zoomText;
+            const distanceInKm = (currentZoom / 1000).toFixed(1);
+            document.getElementById('zoom-level').textContent = `Distanza: ${distanceInKm}km`;
         }
 
         function capturePhoto() {
