@@ -85,40 +85,46 @@
 
         async function initCamera() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
+                const constraints = {
                     video: {
-                        facingMode: 'environment',
-                        width: { ideal: 4096 },
-                        height: { ideal: 2160 }
+                        facingMode: { exact: "environment" },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        zoom: true
                     }
-                });
+                };
+                
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
                 
                 const track = stream.getVideoTracks()[0];
                 const capabilities = track.getCapabilities();
+                console.log('Capacità della camera:', capabilities); // Per debug
                 
-                if (capabilities.zoom) {
-                    const zoomIn = document.getElementById('zoom-in');
-                    
-                    zoomIn.onclick = () => {
-                        currentZoom = Math.min(currentZoom + 100, 20000);
-                        track.applyConstraints({
+                const zoomIn = document.getElementById('zoom-in');
+                zoomIn.onclick = async () => {
+                    try {
+                        currentZoom = Math.min(currentZoom * 2, 20000);
+                        await track.applyConstraints({
                             advanced: [{
                                 zoom: currentZoom
                             }]
+                        }).then(() => {
+                            console.log('Zoom applicato:', currentZoom); // Per debug
+                            updateZoomDisplay();
                         });
-                        updateZoomDisplay();
-                    };
-                }
-
-                document.getElementById('capture').onclick = capturePhoto;
-                document.getElementById('record').onclick = toggleRecording;
+                    } catch (e) {
+                        console.log('Errore zoom:', e);
+                        alert('Questo dispositivo non supporta lo zoom della fotocamera');
+                    }
+                };
             } catch (err) {
-                console.error('Error accessing camera:', err);
-                alert('Errore: Assicurati di aver dato i permessi alla fotocamera');
+                console.error('Errore camera:', err);
+                alert('Errore: Attiva i permessi della fotocamera');
             }
         }
+    </script>
 
         function updateZoomDisplay() {
             const distanceInKm = (currentZoom / 1000).toFixed(1);
