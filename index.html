@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telescopio Digitale 1000x</title>
+    <link rel="manifest" href="manifest.json">
     <style>
         body {
             margin: 0;
@@ -157,6 +158,11 @@
     
             window.onload = initCamera;
         document.addEventListener('touchstart', initCamera, {once: true});
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
     </script>
 </body>
 </html>
