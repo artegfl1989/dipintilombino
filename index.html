@@ -133,14 +133,26 @@
                         const zoomArea = {
                             width: video.videoWidth / currentZoom,
                             height: video.videoHeight / currentZoom,
+                            // Centra perfettamente l'area di zoom
                             x: (video.videoWidth - video.videoWidth / currentZoom) / 2,
                             y: (video.videoHeight - video.videoHeight / currentZoom) / 2
                         };
                         
-                        ctx.drawImage(video, 
-                            zoomArea.x, zoomArea.y, zoomArea.width, zoomArea.height,
+                        // Pulisci il canvas prima di disegnare
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        
+                        // Applica smoothing e stabilizzazione
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
+                        
+                        // Disegna con stabilizzazione
+                        ctx.drawImage(
+                            video,
+                            Math.round(zoomArea.x), Math.round(zoomArea.y),
+                            Math.round(zoomArea.width), Math.round(zoomArea.height),
                             0, 0, canvas.width, canvas.height
                         );
+                        
                         if (mediaRecorder.state === 'recording') {
                             requestAnimationFrame(drawFrame);
                         }
