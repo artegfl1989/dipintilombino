@@ -95,6 +95,22 @@
                 video.srcObject = stream;
                 await video.play();
 
+                // Aggiungi stabilizzazione tipo immagine
+                video.style.transition = 'transform 5s ease';
+                let isStabilizing = false;
+
+                setInterval(() => {
+                    if (!isStabilizing) {
+                        isStabilizing = true;
+                        const microMove = 0.0001;
+                        video.style.transform = `scale(${currentZoom}) translate(${microMove}px, ${microMove}px)`;
+                        setTimeout(() => {
+                            video.style.transform = `scale(${currentZoom})`;
+                            isStabilizing = false;
+                        }, 5000);
+                    }
+                }, 10000);
+
                 // Aggiunta cattura foto
                 document.getElementById('capture').onclick = async () => {
                     const canvas = document.getElementById('photo');
