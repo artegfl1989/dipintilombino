@@ -85,15 +85,72 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
+                        facingMode: { exact: "environment" },
+                        width: { ideal: 3840 },
+                        height: { ideal: 2160 }
                     }
                 });
                 
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
                 const track = stream.getVideoTracks()[0];
+                
+                // Controllo luminosità semplificato
+                let currentBrightness = 50;
+                
+                document.getElementById('exposure-up').onclick = async () => {
+                    try {
+                        currentBrightness = Math.min(currentBrightness + 5, 100);
+                        await track.applyConstraints({
+                            advanced: [{ brightness: currentBrightness }]
+                        });
+                    } catch(e) {
+                        console.log('Brightness adjustment failed:', e);
+                    }
+                };
+
+                document.getElementById('exposure-down').onclick = async () => {
+                    try {
+                        currentBrightness = Math.max(currentBrightness - 5, 0);
+                        await track.applyConstraints({
+                            advanced: [{ brightness: currentBrightness }]
+                        });
+                    } catch(e) {
+                        console.log('Brightness adjustment failed:', e);
+                    }
+                };
                 const capabilities = track.getCapabilities();
+                
+                // Controllo esposizione per Trust webcam
+                if ('exposureTime' in capabilities || 'exposureCompensation' in capabilities) {
+                    document.getElementById('exposure-up').onclick = async () => {
+                        try {
+                            const settings = track.getSettings();
+                            if ('exposureCompensation' in settings) {
+                                await track.applyConstraints({
+                                    advanced: [{ exposureCompensation: settings.exposureCompensation + 0.5 }]
+                                });
+                            }
+                        } catch(e) {
+                            console.log('Exposure adjustment failed:', e);
+                        }
+                    };
+
+                    document.getElementById('exposure-down').onclick = async () => {
+                        try {
+                            const settings = track.getSettings();
+                            if ('exposureCompensation' in settings) {
+                                await track.applyConstraints({
+                                    advanced: [{ exposureCompensation: settings.exposureCompensation - 0.5 }]
+                                });
+                            }
+                        } catch(e) {
+                            console.log('Exposure adjustment failed:', e);
+                        }
+                    };
+                } else {
+                    console.log('Exposure control not supported');
+                }
                 const settings = track.getSettings();
                 
                 if ('brightness' in capabilities) {
