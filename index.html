@@ -17,12 +17,17 @@
             position: relative;
             flex: 1;
             overflow: hidden;
-        }
-        #camera {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+ zoom deve funionare realnente         }
+        <style>
+            #camera {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                object-fit: cover;
+            }
+        </style>
         .controls {
             position: fixed;
             bottom: 20px;
@@ -85,42 +90,49 @@
 
         async function initCamera() {
             try {
-                // Richiediamo la camera posteriore con massima risoluzione
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: { exact: "environment" },
                         width: { ideal: 4096 },
-                        height: { ideal: 2160 },
-                        zoom: true
+                        height: { ideal: 2160 }
                     }
                 });
                 
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
-                await video.play();
                 
                 const track = stream.getVideoTracks()[0];
+                const capabilities = track.getCapabilities();
                 
-                // Zoom massimo con un solo click
-                const zoomIn = document.getElementById('zoom-in');
-                zoomIn.onclick = () => {
-                    currentZoom = 20000; // Zoom massimo diretto
-                    try {
-                        track.applyConstraints({
-                            advanced: [{
-                                zoom: currentZoom
-                            }]
-                        });
-                        document.getElementById('zoom-level').textContent = `Distanza: 20km`;
-                    } catch (e) {
-                        alert('Prova a riavviare la pagina per lo zoom massimo');
-                    }
-                };
-
-                // Nascondiamo il pulsante zoom-out
-                document.getElementById('zoom-out').style.display = 'none';
+                if (capabilities.zoom) {
+                    const zoomIn = document.getElementById('zoom-in');
+                    const zoomOut = document.getElementById('zoom-out');
+                    
+                    // Verifica il range di zoom supportato
+                    const maxZoom = capabilities.zoom.max || 20000;
+                    const minZoom = capabilities.zoom.min || 1;
+                    
+                    zoomIn.onclick = async () => {
+                        try {
+                            currentZoom = Math.min(currentZoom * 2, maxZoom);
+                            await track.applyConstraints({
+                                advanced: [{
+                                    zoom: currentZoom
+                                }]
+                            });
+                            const settings = track.getSettings();
+                            console.log('Zoom attuale:', settings.zoom);
+                            document.getElementById('zoom-level').textContent = 
+                                `Zoom: ${(settings.zoom/1000).toFixed(1)}km`;
+                        } catch (e) {
+                            console.error('Zoom error:', e);
+                        }
+                    };
+                } else {
+                    alert('Il tuo dispositivo non supporta lo zoom della fotocamera');
+                }
             } catch (err) {
-                alert('Riavvia e dai i permessi alla fotocamera posteriore');
+                alert('Attiva la fotocamera posteriore');
             }
         }
 
