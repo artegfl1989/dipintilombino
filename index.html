@@ -119,10 +119,10 @@
                 canvas.width = 3840;
                 canvas.height = 2160;
                 
-                const zoomedStream = canvas.captureStream(30);
+                const zoomedStream = canvas.captureStream(60); // 60fps per fluidità
                 mediaRecorder = new MediaRecorder(zoomedStream, {
                     mimeType: mimeType,
-                    videoBitsPerSecond: 8000000
+                    videoBitsPerSecond: 12000000 // 12Mbps per qualità 4K
                 });
                 
                 document.getElementById('record').onclick = () => {
@@ -131,34 +131,7 @@
                     lastX = (video.videoWidth - video.videoWidth / currentZoom) / 2;
                     lastY = (video.videoHeight - video.videoHeight / currentZoom) / 2;
                     
-                    const drawFrame = () => {
-                        const zoomArea = {
-                            width: video.videoWidth / currentZoom,
-                            height: video.videoHeight / currentZoom,
-                            x: (video.videoWidth - video.videoWidth / currentZoom) / 2,
-                            y: (video.videoHeight - video.videoHeight / currentZoom) / 2
-                        };
-                        
-                        zoomArea.x = lastX = lastX * 0.9 + zoomArea.x * 0.1;
-                        zoomArea.y = lastY = lastY * 0.9 + zoomArea.y * 0.1;
-                        
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        ctx.imageSmoothingEnabled = true;
-                        ctx.imageSmoothingQuality = 'high';
-                        
-                        ctx.drawImage(
-                            video,
-                            Math.round(zoomArea.x), Math.round(zoomArea.y),
-                            Math.round(zoomArea.width), Math.round(zoomArea.height),
-                            0, 0, canvas.width, canvas.height
-                        );
-                        
-                        if (mediaRecorder.state === 'recording') {
-                            requestAnimationFrame(drawFrame);
-                        }
-                    };
-                    
-                    mediaRecorder.start();
+                    mediaRecorder.start(1000); // Chunk ogni secondo per sicurezza
                     drawFrame();
                     document.getElementById('record').style.display = 'none';
                     document.getElementById('stop').style.display = 'block';
