@@ -8,27 +8,18 @@
         body {
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
             background: #000;
-        }
-        #camera-container {
-            position: relative;
-            flex: 1;
+            height: 100vh;
             overflow: hidden;
- zoom deve funionare realnente         }
-        <style>
-            /* Rimuovo stile duplicato e corretto */
-            #camera {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                object-fit: cover;
-            }
-        </style>
+        }
+        #camera {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
         .controls {
             position: fixed;
             bottom: 20px;
@@ -39,9 +30,6 @@
             gap: 20px;
             padding: 10px;
             z-index: 1000;
-            min-width: 320px;
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
         }
         button {
             padding: 15px 30px;
@@ -51,11 +39,6 @@
             color: white;
             backdrop-filter: blur(5px);
             font-size: 18px;
-            min-width: 60px;
-            white-space: nowrap;
-            z-index: 1000;
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
         }
         #zoom-level {
             position: fixed;
@@ -66,123 +49,71 @@
             padding: 5px 10px;
             border-radius: 5px;
             z-index: 1000;
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
         }
     </style>
 </head>
 <body>
-    <div id="camera-container">
-        <video id="camera" autoplay playsinline></video>
-        <div id="zoom-level">Zoom: 1x</div>
-    </div>
+    <video id="camera" autoplay playsinline></video>
+    <div id="zoom-level">Zoom: 1x</div>
     <div class="controls">
-        <button id="zoom-out">- Zoom</button>
-        <button id="capture">📸 Capture</button>
-        <button id="record">🎥 Record</button>
         <button id="zoom-in">+ Zoom</button>
+        <button id="capture">📸</button>
+        <button id="record">🎥</button>
     </div>
 
     <script>
         let currentZoom = 1;
         let isRecording = false;
         let mediaRecorder = null;
-        let recordedChunks = [];
 
         async function initCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: { exact: "environment" },
-                        width: { ideal: 4096 },
-                        height: { ideal: 2160 }
+                        facingMode: { exact: "environment" }
                     }
                 });
                 
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
-                await video.play();
                 
                 const track = stream.getVideoTracks()[0];
-                const capabilities = track.getCapabilities();
-                console.log('Capacità:', capabilities);
                 
-                const zoomIn = document.getElementById('zoom-in');
-                zoomIn.onclick = async () => {
+                document.getElementById('zoom-in').onclick = async () => {
                     try {
                         currentZoom *= 2;
-                        if (currentZoom > 20000) currentZoom = 20000;
+                        if(currentZoom > 20000) currentZoom = 20000;
                         
                         await track.applyConstraints({
-                            advanced: [{
-                                zoom: currentZoom
-                            }]
+                            advanced: [{ zoom: currentZoom }]
                         });
                         
                         document.getElementById('zoom-level').textContent = 
-                            `Distanza: ${(currentZoom/1000).toFixed(1)}km`;
+                            `${(currentZoom/1000).toFixed(1)}km`;
                     } catch (e) {
-                        console.error('Errore zoom:', e);
+                        console.log('Zoom:', e);
                     }
                 };
+
+                document.getElementById('capture').onclick = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0);
+                    canvas.toBlob(blob => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'foto.jpg';
+                        a.click();
+                    }, 'image/jpeg');
+                };
             } catch (err) {
-                console.error('Errore camera:', err);
                 alert('Attiva la fotocamera posteriore');
             }
         }
 
-        // Inizializzazione corretta
-        document.addEventListener('DOMContentLoaded', initCamera);
-    </script>
-
-        function updateZoomDisplay() {
-            const distanceInKm = (currentZoom / 1000).toFixed(1);
-            document.getElementById('zoom-level').textContent = `Distanza: ${distanceInKm}km`;
-        }
-
-        function capturePhoto() {
-            const video = document.getElementById('camera');
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            
-            const link = document.createElement('a');
-            link.download = `photo_${Date.now()}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
-        }
-
-        function toggleRecording() {
-            const video = document.getElementById('camera');
-            const recordBtn = document.getElementById('record');
-
-            if (!isRecording) {
-                recordedChunks = [];
-                mediaRecorder = new MediaRecorder(video.srcObject);
-                mediaRecorder.ondataavailable = (e) => recordedChunks.push(e.data);
-                mediaRecorder.onstop = saveVideo;
-                mediaRecorder.start();
-                recordBtn.textContent = '⏹ Stop';
-                isRecording = true;
-            } else {
-                mediaRecorder.stop();
-                recordBtn.textContent = '🎥 Record';
-                isRecording = false;
-            }
-        }
-
-        function saveVideo() {
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.download = `video_${Date.now()}.webm`;
-            link.href = url;
-            link.click();
-            URL.revokeObjectURL(url);
-        }
-
-        window.onload = initCamera;
+        initCamera();
     </script>
 </body>
 </html>
