@@ -75,7 +75,13 @@
                         video: {
                             facingMode: { exact: "environment" },
                             width: { ideal: 3840 },
-                            height: { ideal: 2160 }
+                            height: { ideal: 2160 },
+                            advanced: [{
+                                focusMode: "continuous",
+                                exposureMode: "continuous",
+                                whiteBalanceMode: "continuous",
+                                stabilizationMode: "digital"
+                            }]
                         }
                     };
     
@@ -83,6 +89,21 @@
                     const video = document.getElementById('camera');
                     video.srcObject = stream;
                     await video.play();
+    
+                    // Gestione zoom graduale
+                    document.getElementById('zoom-in').onclick = () => {
+                        currentZoom = Math.min(currentZoom + 30, maxZoom);
+                        applyZoom(currentZoom);
+                    };
+    
+                    function applyZoom(zoom) {
+                        requestAnimationFrame(() => {
+                            video.style.transform = `scale(${zoom})`;
+                            video.style.transformOrigin = '50% 50%';
+                            document.getElementById('zoom-level').textContent = 
+                                zoom >= 1000 ? '1000x 🌌' : zoom + 'x';
+                        });
+                    }
     
                     // Inizializza registrazione
                     mediaRecorder = new MediaRecorder(stream);
