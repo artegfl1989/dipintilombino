@@ -1,83 +1,95 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Zoom Cam Android</title>
+    <title>Telescopio Digitale 1000x</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background: #1a1a1a;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            background: #000;
             height: 100vh;
+            overflow: hidden;
         }
-        video {
-            width: 80%;
-            max-height: 400px;
-            border: 5px solid #333;
-            border-radius: 10px;
+        #camera {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform-origin: center;
+            transition: none;
+        }
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 1000;
+        }
+        #zoom-level {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 20px;
+            z-index: 1000;
         }
         button {
-            background-color: #ff4500;
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.2);
             color: white;
             border: none;
-            padding: 10px 20px;
-            margin: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #ff6347;
+            border-radius: 25px;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
-    <h1>Super Zoom Cam Android</h1>
-    <video id="camera" autoplay></video>
-    <button id="start-camera">Avvia Fotocamera</button>
-    <button id="zoom-50x">Zoom 50x</button>
-    <button id="zoom-200x">Zoom 200x</button>
-    <button id="zoom-1000x">Zoom 1000x</button>
+    <video id="camera" autoplay playsinline></video>
+    <div id="zoom-level">1x</div>
+    <div class="controls">
+        <button id="zoom-in">🔭 SUPER ZOOM</button>
+    </div>
 
     <script>
-        const video = document.getElementById('camera');
-        const startButton = document.getElementById('start-camera');
-        let track = null;
+        let currentZoom = 1;
+        const maxZoom = 1000;
 
-        startButton.addEventListener('click', async () => {
+        async function initCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { exact: "environment" } }
+                    video: {
+                        facingMode: "environment",
+                        width: { ideal: 3840 },
+                        height: { ideal: 2160 }
+                    }
                 });
+                
+                const video = document.getElementById('camera');
                 video.srcObject = stream;
-                track = stream.getVideoTracks()[0];
-            } catch (error) {
-                console.error('Errore nell\'accedere alla fotocamera:', error);
-            }
-        });
-
-        function setZoom(level) {
-            if (track && track.getCapabilities().zoom) {
-                const capabilities = track.getCapabilities();
-                const maxZoom = capabilities.zoom.max; // Livello massimo supportato dal dispositivo
-                const zoomLevel = Math.min(level, maxZoom); // Si assicura di non superare il massimo
-                track.applyConstraints({ advanced: [{ zoom: zoomLevel }] });
-                console.log(`Zoom impostato a ${zoomLevel}x`);
-            } else {
-                console.warn('Lo zoom non è supportato su questo dispositivo.');
-            }
+                video.play();
+                
+                document.getElementById('zoom-in').onclick = () => {
+                    currentZoom = maxZoom;
+                    video.style.transform = `scale(${currentZoom})`;
+                    video.style.transformOrigin = '50% 50%';
+                    document.getElementById('zoom-level').textContent = '1000x 🌌';
+                };
+            } catch (err) {}
         }
 
-        document.getElementById('zoom-50x').addEventListener('click', () => setZoom(50));
-        document.getElementById('zoom-200x').addEventListener('click', () => setZoom(200));
-        document.getElementById('zoom-1000x').addEventListener('click', () => setZoom(1000));
+        // Avvio automatico
+        window.addEventListener('load', initCamera);
+        document.addEventListener('touchstart', initCamera, {once: true});
     </script>
 </body>
 </html>
