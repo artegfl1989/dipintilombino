@@ -13,7 +13,7 @@
             height: 100vh;
             overflow: hidden;
         }
-        #camera, #photo {
+        #camera {
             width: 100vw;
             height: 100vh;
             object-fit: cover;
@@ -21,9 +21,7 @@
             top: 0;
             left: 0;
             transform-origin: center;
-        }
-        #photo {
-            display: none;
+            transition: transform 0.3s ease;
         }
         #zoom-level {
             position: fixed;
@@ -46,7 +44,6 @@
             gap: 20px;
             z-index: 1000;
             padding: 10px;
-            flex-wrap: wrap;
         }
         button {
             padding: 15px 30px;
@@ -59,31 +56,16 @@
             text-align: center;
         }
     </style>
-
+</head>
+<body>
     <video id="camera" autoplay playsinline></video>
     <canvas id="photo"></canvas>
     <div id="zoom-level">1x</div>
     <div class="controls">
-        <button id="zoom-in">🔭 ZOOM</button>
+        <button id="zoom-in">🔭 ZOOM +</button>
         <button id="zoom-max">⭐ MAX</button>
         <button id="capture">📸 FOTO</button>
         <button id="record">📹 REC</button>
-        <button id="stop" style="display:none">⏹️ STOP</button>
-    </div>
-        .emoji {
-            font-size: 28px;
-            display: inline-block;
-        }
-    </style>
-
-    <video id="camera" autoplay playsinline></video>
-    <canvas id="photo"></canvas>
-    <div id="zoom-level">1x</div>
-    <div class="controls">
-        <button id="zoom-in">⚡ ZOOM +</button>
-        <button id="zoom-max">🔭 MAX 1000x</button>
-        <button id="capture">📸 FOTO 4K</button>
-        <button id="record">🎥 REC</button>
         <button id="stop" style="display:none">⏹️ STOP</button>
     </div>
 
@@ -95,59 +77,28 @@
 
         async function initCamera() {
             try {
-                const constraints = {
+                const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: { exact: "environment" },
-                        width: { ideal: 3840 }, // 4K
-                        height: { ideal: 2160 }, // 4K
-                        advanced: [{
-                            focusMode: "continuous",
-                            exposureMode: "continuous",
-                            whiteBalanceMode: "continuous"
-                        }]
+                        width: { ideal: 3840 },
+                        height: { ideal: 2160 }
                     }
-                };
-
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                });
+                
                 const video = document.getElementById('camera');
                 video.srcObject = stream;
                 await video.play();
 
-                // Aggiunta cattura foto
-                document.getElementById('capture').onclick = () => {
-                    const canvas = document.getElementById('photo');
-                    canvas.width = 3840;
-                    canvas.height = 2160;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
-                    // Download automatico
-                    const link = document.createElement('a');
-                    link.download = 'SuperZoom-4K.png';
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                };
-
-                // Gestione zoom unificata
-                function applyZoom(zoom) {
-                    requestAnimationFrame(() => {
-                        video.style.transform = `scale(${zoom})`;
-                        video.style.transformOrigin = '50% 50%';
-                        document.getElementById('zoom-level').textContent = 
-                            zoom >= 1000 ? '1000x 🌌' : zoom + 'x';
-                    });
-                }
-
-                // Zoom graduale
                 document.getElementById('zoom-in').onclick = () => {
                     currentZoom = Math.min(currentZoom + 30, maxZoom);
-                    applyZoom(currentZoom);
+                    video.style.transform = `scale(${currentZoom})`;
+                    document.getElementById('zoom-level').textContent = `${currentZoom}x`;
                 };
 
-                // Zoom massimo
                 document.getElementById('zoom-max').onclick = () => {
                     currentZoom = maxZoom;
-                    applyZoom(currentZoom);
+                    video.style.transform = `scale(${maxZoom})`;
+                    document.getElementById('zoom-level').textContent = '1000x 🌌';
                 };
 
                 // Inizializza registrazione
@@ -200,12 +151,6 @@
         }
 
         window.onload = initCamera;
-    document.addEventListener('touchstart', initCamera, {once: true});
-    </script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
     </script>
 </body>
 </html>
