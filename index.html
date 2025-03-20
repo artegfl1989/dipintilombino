@@ -25,6 +25,17 @@
         #photo {
             display: none;
         }
+        #zoom-level {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 20px;
+            z-index: 1000;
+        }
         .controls {
             position: fixed;
             bottom: 20px;
@@ -35,6 +46,7 @@
             gap: 20px;
             z-index: 1000;
             padding: 10px;
+            flex-wrap: wrap;
         }
         button {
             padding: 15px 30px;
@@ -43,12 +55,21 @@
             border: 2px solid white;
             border-radius: 25px;
             font-size: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 120px;
-            justify-content: center;
+            min-width: 150px;
+            text-align: center;
         }
+    </style>
+
+    <video id="camera" autoplay playsinline></video>
+    <canvas id="photo"></canvas>
+    <div id="zoom-level">1x</div>
+    <div class="controls">
+        <button id="zoom-in">🔭 ZOOM</button>
+        <button id="zoom-max">⭐ MAX</button>
+        <button id="capture">📸 FOTO</button>
+        <button id="record">📹 REC</button>
+        <button id="stop" style="display:none">⏹️ STOP</button>
+    </div>
         .emoji {
             font-size: 28px;
             display: inline-block;
