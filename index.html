@@ -1,72 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Zoom Camera</title>
+    <title>Super Zoom Cam Android</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background: #000;
+            background: #1a1a1a;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             height: 100vh;
-            overflow: hidden;
         }
-        #camera {
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            position: fixed;
-            top: 0;
-            left: 0;
-            transform-origin: center;
-            transition: transform 0.2s ease;
+        video {
+            width: 80%;
+            max-height: 400px;
+            border: 5px solid #333;
+            border-radius: 10px;
+        }
+        button {
+            background-color: #ff4500;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #ff6347;
         }
     </style>
+</head>
+<body>
+    <h1>Super Zoom Cam Android</h1>
+    <video id="camera" autoplay></video>
+    <button id="start-camera">Avvia Fotocamera</button>
+    <button id="zoom-in">Zoom In</button>
+    <button id="zoom-out">Zoom Out</button>
 
     <script>
-        let currentZoom = 1;
+        const video = document.getElementById('camera');
+        const startButton = document.getElementById('start-camera');
+        let track = null;
+        let zoomLevel = 1;
 
-        async function initCamera() {
+        startButton.addEventListener('click', async () => {
             try {
-                const constraints = {
-                    video: {
-                        facingMode: "environment",
-                        width: { ideal: 3840 },
-                        height: { ideal: 2160 },
-                        deviceId: { exact: await getBackCamera() }
-                    }
-                };
-                
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                const video = document.getElementById('camera');
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = stream;
-                video.setAttribute('autoplay', true);
-                video.setAttribute('playsinline', true);
-                video.setAttribute('muted', true);
-                
-                // Forza l'avvio immediato
-                video.muted = true;
-                video.play();
-                
-                document.getElementById('zoom-in').onclick = () => {
-                    currentZoom = 200;
-                    video.style.transform = `scale(${currentZoom})`;
-                    video.style.transformOrigin = 'center center';
-                    document.getElementById('zoom-level').textContent = '200x';
-                };
-            } catch (err) {}
-        }
+                track = stream.getVideoTracks()[0]; // Accediamo alla traccia video
+            } catch (error) {
+                console.error('Errore nell\'accedere alla fotocamera:', error);
+            }
+        });
 
-        async function getBackCamera() {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const cameras = devices.filter(device => device.kind === 'videoinput');
-            return cameras[cameras.length - 1].deviceId;
-        }
+        document.getElementById('zoom-in').addEventListener('click', () => {
+            if (track && track.getCapabilities().zoom) {
+                zoomLevel = Math.min(zoomLevel + 0.1, track.getCapabilities().zoom.max);
+                track.applyConstraints({ advanced: [{ zoom: zoomLevel }] });
+            }
+        });
 
-        // Avvio automatico
-        document.addEventListener('touchstart', initCamera, {once: true});
-        window.addEventListener('load', initCamera);
+        document.getElementById('zoom-out').addEventListener('click', () => {
+            if (track && track.getCapabilities().zoom) {
+                zoomLevel = Math.max(zoomLevel - 0.1, track.getCapabilities().zoom.min);
+                track.applyConstraints({ advanced: [{ zoom: zoomLevel }] });
+            }
+        });
     </script>
 </body>
 </html>
