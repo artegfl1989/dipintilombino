@@ -88,7 +88,12 @@
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: 'environment',
-                        zoom: true
+                        zoom: true,
+                        advanced: [{
+                            focusMode: ['manual', 'continuous'],
+                            focusDistance: 0.01,
+                            exposureMode: 'manual'
+                        }]
                     }
                 });
                 const video = document.getElementById('camera');
@@ -102,14 +107,26 @@
                     const zoomOut = document.getElementById('zoom-out');
                     
                     zoomIn.onclick = () => {
-                        currentZoom = Math.min(currentZoom + 10, Math.min(1000, capabilities.zoom.max));
-                        track.applyConstraints({advanced: [{zoom: currentZoom}]});
+                        currentZoom = Math.min(currentZoom * 1.5, 3000);
+                        track.applyConstraints({
+                            advanced: [{
+                                zoom: currentZoom,
+                                focusMode: 'manual',
+                                focusDistance: 0.01
+                            }]
+                        });
                         updateZoomDisplay();
                     };
                     
                     zoomOut.onclick = () => {
-                        currentZoom = Math.max(currentZoom - 10, 1);
-                        track.applyConstraints({advanced: [{zoom: currentZoom}]});
+                        currentZoom = Math.max(currentZoom / 1.5, 1);
+                        track.applyConstraints({
+                            advanced: [{
+                                zoom: currentZoom,
+                                focusMode: 'manual',
+                                focusDistance: 0.01
+                            }]
+                        });
                         updateZoomDisplay();
                     };
                 }
@@ -123,7 +140,10 @@
         }
 
         function updateZoomDisplay() {
-            document.getElementById('zoom-level').textContent = `Zoom: ${currentZoom.toFixed(1)}x`;
+            const zoomText = currentZoom >= 1000 
+                ? `Zoom: ${(currentZoom/1000).toFixed(1)}km` 
+                : `Zoom: ${currentZoom.toFixed(1)}x`;
+            document.getElementById('zoom-level').textContent = zoomText;
         }
 
         function capturePhoto() {
