@@ -53,7 +53,9 @@
 
         startButton.addEventListener('click', async () => {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { exact: "environment" } } // Specifica la fotocamera posteriore
+                });
                 video.srcObject = stream;
                 track = stream.getVideoTracks()[0]; // Accediamo alla traccia video
             } catch (error) {
