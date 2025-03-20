@@ -1,49 +1,162 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galleria d'Arte - Lombino Giulio Francesco</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Super Zoom Camera</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: #000;
+        }
+        #camera-container {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+        }
+        #camera {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px;
+        }
+        button {
+            padding: 15px 30px;
+            border-radius: 25px;
+            border: none;
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            backdrop-filter: blur(5px);
+            font-size: 18px;
+        }
+        #zoom-level {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Galleria d'Arte Lombino Giulio Francesco</h1>
-        <p>Opere Originali - Olio su Tela</p>
-    </header>
+    <div id="camera-container">
+        <video id="camera" autoplay playsinline></video>
+        <div id="zoom-level">Zoom: 1x</div>
+    </div>
+    <div class="controls">
+        <button id="zoom-out">- Zoom</button>
+        <button id="capture">📸 Capture</button>
+        <button id="record">🎥 Record</button>
+        <button id="zoom-in">+ Zoom</button>
+    </div>
 
-    <main class="gallery">
-        <div class="painting-card">
-            <img src="dipinti/dipinto 1.jpg" alt="dipinto 1">
-            <div class="painting-info">
-                <h3>dipinto 1</h3>
-                <p>Olio su Tela 40x30</p>
-                <p class="price">150 €</p>
-            </div>
-        </div>
+    <script>
+        let currentZoom = 1;
+        let isRecording = false;
+        let mediaRecorder = null;
+        let recordedChunks = [];
 
-        <div class="painting-card">
-            <img src="dipinti/dipinto 2.jpg" alt="dipinto 2">
-            <div class="painting-info">
-                <h3>dipinto 2</h3>
-                <p>Olio su Tela 40x30</p>
-                <p class="price">150 €</p>
-            </div>
-        </div>
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        zoom: true
+                    }
+                });
+                const video = document.getElementById('camera');
+                video.srcObject = stream;
+                
+                const track = stream.getVideoTracks()[0];
+                const capabilities = track.getCapabilities();
+                
+                if (capabilities.zoom) {
+                    const zoomIn = document.getElementById('zoom-in');
+                    const zoomOut = document.getElementById('zoom-out');
+                    
+                    zoomIn.onclick = () => {
+                        currentZoom = Math.min(currentZoom + 0.5, capabilities.zoom.max);
+                        track.applyConstraints({advanced: [{zoom: currentZoom}]});
+                        updateZoomDisplay();
+                    };
+                    
+                    zoomOut.onclick = () => {
+                        currentZoom = Math.max(currentZoom - 0.5, 1);
+                        track.applyConstraints({advanced: [{zoom: currentZoom}]});
+                        updateZoomDisplay();
+                    };
+                }
 
-        <div class="painting-card">
-            <img src="dipinti/dipinto 3.jpg" alt="dipinto 3">
-            <div class="painting-info">
-                <h3>dipinto 3</h3>
-                <p>Olio su Tela 40x30</p>
-                <p class="price">150 €</p>
-            </div>
-        </div>
+                document.getElementById('capture').onclick = capturePhoto;
+                document.getElementById('record').onclick = toggleRecording;
+            } catch (err) {
+                console.error('Error accessing camera:', err);
+                alert('Error accessing camera. Please make sure you have granted camera permissions.');
+            }
+        }
 
-    </main>
+        function updateZoomDisplay() {
+            document.getElementById('zoom-level').textContent = `Zoom: ${currentZoom.toFixed(1)}x`;
+        }
 
-    <footer>
-        <p>© 2024 Galleria d'Arte. Tutti i diritti riservati.</p>
-    </footer>
+        function capturePhoto() {
+            const video = document.getElementById('camera');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            const link = document.createElement('a');
+            link.download = `photo_${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function toggleRecording() {
+            const video = document.getElementById('camera');
+            const recordBtn = document.getElementById('record');
+
+            if (!isRecording) {
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(video.srcObject);
+                mediaRecorder.ondataavailable = (e) => recordedChunks.push(e.data);
+                mediaRecorder.onstop = saveVideo;
+                mediaRecorder.start();
+                recordBtn.textContent = '⏹ Stop';
+                isRecording = true;
+            } else {
+                mediaRecorder.stop();
+                recordBtn.textContent = '🎥 Record';
+                isRecording = false;
+            }
+        }
+
+        function saveVideo() {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = `video_${Date.now()}.webm`;
+            link.href = url;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        window.onload = initCamera;
+    </script>
 </body>
 </html>
