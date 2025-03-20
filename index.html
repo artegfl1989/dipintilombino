@@ -58,7 +58,9 @@
     <div id="zoom-level">1x</div>
     <div class="controls">
         <button id="zoom-in">🔭 SUPER ZOOM</button>
-        <button id="zoom-out">🔽 ZOOM OUT</button>
+        <button id="zoom-out-100">⬇️ -100x</button>
+        <button id="zoom-out-50">⬇️ -50x</button>
+        <button id="zoom-out-10">⬇️ -10x</button>
     </div>
 
     <script>
@@ -71,7 +73,13 @@
                     video: {
                         facingMode: "environment",
                         width: { ideal: 3840 },
-                        height: { ideal: 2160 }
+                        height: { ideal: 2160 },
+                        // Aggiungiamo stabilizzazione e autofocus
+                        advanced: [{
+                            stabilizationMode: "digital",
+                            focusMode: "continuous",
+                            exposureMode: "continuous"
+                        }]
                     }
                 });
                 
@@ -81,17 +89,32 @@
                 
                 document.getElementById('zoom-in').onclick = () => {
                     currentZoom = maxZoom;
-                    video.style.transform = `scale(${currentZoom})`;
-                    video.style.transformOrigin = '50% 50%';
-                    document.getElementById('zoom-level').textContent = '1000x 🌌';
+                    applyZoom(currentZoom);
                 };
 
-                document.getElementById('zoom-out').onclick = () => {
-                    currentZoom = Math.max(currentZoom - 5, 1);
-                    video.style.transform = `scale(${currentZoom})`;
-                    video.style.transformOrigin = '50% 50%';
-                    document.getElementById('zoom-level').textContent = currentZoom + 'x';
+                document.getElementById('zoom-out-100').onclick = () => {
+                    currentZoom = Math.max(currentZoom - 100, 1);
+                    applyZoom(currentZoom);
                 };
+
+                document.getElementById('zoom-out-50').onclick = () => {
+                    currentZoom = Math.max(currentZoom - 50, 1);
+                    applyZoom(currentZoom);
+                };
+
+                document.getElementById('zoom-out-10').onclick = () => {
+                    currentZoom = Math.max(currentZoom - 10, 1);
+                    applyZoom(currentZoom);
+                };
+
+                function applyZoom(zoom) {
+                    requestAnimationFrame(() => {
+                        video.style.transform = `scale(${zoom})`;
+                        video.style.transformOrigin = '50% 50%';
+                        document.getElementById('zoom-level').textContent = 
+                            zoom >= 1000 ? '1000x 🌌' : zoom + 'x';
+                    });
+                }
             } catch (err) {}
         }
 
