@@ -89,6 +89,36 @@
                 video.srcObject = stream;
                 await video.play();
 
+                // Aggiunta cattura foto
+                document.getElementById('capture').onclick = () => {
+                    const canvas = document.getElementById('photo');
+                    canvas.width = 3840;  // 4K width
+                    canvas.height = 2160; // 4K height
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Cattura l'immagine con lo zoom corrente
+                    const scaleFactor = currentZoom;
+                    const sx = (canvas.width - canvas.width/scaleFactor) / 2;
+                    const sy = (canvas.height - canvas.height/scaleFactor) / 2;
+                    const sWidth = canvas.width/scaleFactor;
+                    const sHeight = canvas.height/scaleFactor;
+                    
+                    ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+                    
+                    // Download automatico
+                    canvas.toBlob((blob) => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `Telescopio-4K-${currentZoom}x.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 'image/png');
+                };
+
+                // Gestione zoom
                 document.getElementById('zoom-in').onclick = () => {
                     currentZoom = Math.min(currentZoom + 30, maxZoom);
                     video.style.transform = `scale(${currentZoom})`;
