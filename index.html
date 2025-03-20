@@ -98,18 +98,15 @@
                 // Aggiunta cattura foto
                 document.getElementById('capture').onclick = () => {
                     const canvas = document.getElementById('photo');
-                    canvas.width = 3840;  // 4K width
-                    canvas.height = 2160; // 4K height
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
                     const ctx = canvas.getContext('2d');
                     
-                    // Cattura l'immagine con lo zoom corrente
-                    const scaleFactor = currentZoom;
-                    const sx = (canvas.width - canvas.width/scaleFactor) / 2;
-                    const sy = (canvas.height - canvas.height/scaleFactor) / 2;
-                    const sWidth = canvas.width/scaleFactor;
-                    const sHeight = canvas.height/scaleFactor;
+                    // Pulisci il canvas prima di disegnare
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
-                    ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+                    // Cattura l'immagine con lo zoom corrente
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                     
                     // Download automatico
                     canvas.toBlob((blob) => {
@@ -121,7 +118,7 @@
                         a.click();
                         document.body.removeChild(a);
                         URL.revokeObjectURL(url);
-                    }, 'image/png');
+                    }, 'image/png', 1.0); // Massima qualità
                 };
 
                 // Gestione zoom
