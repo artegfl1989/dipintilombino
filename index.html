@@ -102,13 +102,13 @@
                     const zoomOut = document.getElementById('zoom-out');
                     
                     zoomIn.onclick = () => {
-                        currentZoom = Math.min(currentZoom + 0.5, capabilities.zoom.max);
+                        currentZoom = Math.min(currentZoom + 10, Math.min(1000, capabilities.zoom.max));
                         track.applyConstraints({advanced: [{zoom: currentZoom}]});
                         updateZoomDisplay();
                     };
                     
                     zoomOut.onclick = () => {
-                        currentZoom = Math.max(currentZoom - 0.5, 1);
+                        currentZoom = Math.max(currentZoom - 10, 1);
                         track.applyConstraints({advanced: [{zoom: currentZoom}]});
                         updateZoomDisplay();
                     };
