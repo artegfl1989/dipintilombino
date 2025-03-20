@@ -128,12 +128,7 @@
                     link.click();
                 };
 
-                // Gestione zoom graduale
-                document.getElementById('zoom-in').onclick = () => {
-                    currentZoom = Math.min(currentZoom + 30, maxZoom);
-                    applyZoom(currentZoom);
-                };
-
+                // Gestione zoom unificata
                 function applyZoom(zoom) {
                     requestAnimationFrame(() => {
                         video.style.transform = `scale(${zoom})`;
@@ -142,6 +137,18 @@
                             zoom >= 1000 ? '1000x 🌌' : zoom + 'x';
                     });
                 }
+
+                // Zoom graduale
+                document.getElementById('zoom-in').onclick = () => {
+                    currentZoom = Math.min(currentZoom + 30, maxZoom);
+                    applyZoom(currentZoom);
+                };
+
+                // Zoom massimo
+                document.getElementById('zoom-max').onclick = () => {
+                    currentZoom = maxZoom;
+                    applyZoom(currentZoom);
+                };
 
                 // Inizializza registrazione
                 mediaRecorder = new MediaRecorder(stream);
