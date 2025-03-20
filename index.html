@@ -96,14 +96,16 @@
                 await video.play();
 
                 // Aggiunta cattura foto
-                document.getElementById('capture').onclick = () => {
+                document.getElementById('capture').onclick = async () => {
                     const canvas = document.getElementById('photo');
                     const video = document.getElementById('camera');
                     
-                    // Imposta dimensioni canvas alla risoluzione del video
+                    // Aspetta che il video sia stabile
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
-                    const ctx = canvas.getContext('2d');
+                    const ctx = canvas.getContext('2d', { alpha: false });
                     
                     // Calcola area di zoom
                     const zoomArea = {
@@ -113,7 +115,10 @@
                         y: (canvas.height - canvas.height / currentZoom) / 2
                     };
                     
-                    // Applica zoom e cattura
+                    // Disabilita lo smoothing per una maggiore nitidezza
+                    ctx.imageSmoothingEnabled = false;
+                    
+                    // Cattura con zoom
                     ctx.drawImage(
                         video,
                         zoomArea.x, zoomArea.y,
