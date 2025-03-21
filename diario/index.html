@@ -1,168 +1,49 @@
 <!DOCTYPE html>
-<html lang="it">
+
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Il Diario Segreto di...</title>
-    <style>
-        body {
-            font-family: 'Courier New', monospace;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f4f1ea;
-        }
-        .chapter {
-            margin: 20px 0;
-            padding: 10px;
-            border-left: 3px solid #8b4513;
-            cursor: pointer;
-        }
-        .chapter:hover {
-            background: #e6e1d6;
-        }
-        h1 {
-            color: #8b4513;
-            text-align: center;
-            border-bottom: 2px solid #8b4513;
-            padding-bottom: 10px;
-        }
-        
-        .diary-page {
-            display: none;
-            padding: 40px;
-            background: #fff;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            margin: 20px 0;
-            font-family: 'Courier New', monospace;
-        }
 
-        .text-left { text-align: left; }
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        
-        .font-handwritten { font-family: 'Caveat', cursive; }
-        .font-typed { font-family: 'Courier New', monospace; }
-        .font-formal { font-family: 'Georgia', serif; }
-        
-        .size-small { font-size: 0.9em; }
-        .size-normal { font-size: 1em; }
-        .size-large { font-size: 1.2em; }
-        
-        .toolbar {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
+<title>Flight Tracker</title>
 
-        .toolbar button {
-            margin: 5px;
-            padding: 5px 10px;
-            border: 1px solid #8b4513;
-            background: #f4f1ea;
-            cursor: pointer;
-        }
-    </style>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat&display=swap" rel="stylesheet">
+<style>
+
+/* CSS styles */
+
+</style>
+
 </head>
+
 <body>
-    <h1>Il Diario Segreto di...</h1>
-    
-    <div class="chapter">Prologo: La Prima Pagina</div>
-    
-    <div class="chapter">Capitolo 1: L'Inizio di Tutto
-        <ul>
-            <li>Il giorno che ha cambiato tutto</li>
-            <li>La scoperta inaspettata</li>
-            <li>Primi segreti</li>
-        </ul>
-    </div>
 
-    <div class="chapter">Capitolo 2: Segreti nel Cassetto
-        <ul>
-            <li>Lettere nascoste</li>
-            <li>Vecchie fotografie</li>
-            <li>Misteri del passato</li>
-        </ul>
-    </div>
+<h1>Flight Tracker</h1>
 
-    <div class="chapter">Capitolo 3: Rivelazioni
-        <ul>
-            <li>La verità emerge</li>
-            <li>Confronti difficili</li>
-            <li>Decisioni importanti</li>
-        </ul>
-    </div>
+<div class="search-container">
 
-    <div class="chapter">Capitolo 4: Svolta Inaspettata
-        <ul>
-            <li>Nuove scoperte</li>
-            <li>Cambiamenti improvvisi</li>
-            <li>Direzioni impreviste</li>
-        </ul>
-    </div>
+<input type="text" id="flightIata" placeholder="Enter flight IATA code (e.g., TK900)">
 
-    <div class="chapter">Epilogo: L'Ultima Pagina</div>
-    
-    <div class="diary-page" id="prologo">
-        <div class="text-center font-handwritten size-large">
-            15 Settembre 2023
-        </div>
-        <div class="text-left font-typed size-normal">
-            Caro diario,<br>
-            Oggi inizia questa nuova avventura...
-        </div>
-    </div>
+<button onclick="searchFlight()">Search</button>
 
-    <div class="toolbar">
-        <button onclick="changeAlign('left')">⇤ Sinistra</button>
-        <button onclick="changeAlign('center')">↔ Centro</button>
-        <button onclick="changeAlign('right')">⇥ Destra</button>
-        <button onclick="changeFont('handwritten')">✎ Scritto</button>
-        <button onclick="changeFont('typed')">⌨ Digitato</button>
-        <button onclick="changeSize('small')">A-</button>
-        <button onclick="changeSize('large')">A+</button>
-    </div>
+</div>
 
-    <script>
-        document.querySelectorAll('.chapter').forEach(chapter => {
-            chapter.addEventListener('click', function() {
-                document.querySelectorAll('.diary-page').forEach(page => {
-                    page.style.display = 'none';
-                });
-                const pageId = this.textContent.split(':')[0].toLowerCase().replace(' ', '-');
-                const page = document.getElementById(pageId);
-                if (page) page.style.display = 'block';
-            });
-        });
+<div id="flightInfo"></div>
 
-        function changeAlign(align) {
-            const activePage = document.querySelector('.diary-page[style*="display: block"]');
-            if (activePage) {
-                activePage.className = activePage.className.replace(/text-(left|center|right)/g, '');
-                activePage.classList.add(`text-${align}`);
-            }
-        }
+<div id="weatherInfo">
 
-        function changeFont(font) {
-            const activePage = document.querySelector('.diary-page[style*="display: block"]');
-            if (activePage) {
-                activePage.className = activePage.className.replace(/font-(handwritten|typed|formal)/g, '');
-                activePage.classList.add(`font-${font}`);
-            }
-        }
+<div class="weather-box" id="departureWeather"></div>
 
-        function changeSize(size) {
-            const activePage = document.querySelector('.diary-page[style*="display: block"]');
-            if (activePage) {
-                activePage.className = activePage.className.replace(/size-(small|normal|large)/g, '');
-                activePage.classList.add(`size-${size}`);
-            }
-        }
-    </script>
+<div class="weather-box" id="arrivalWeather"></div>
+
+</div>
+
+<div id="map"></div>
+
+<script src="app.js"></script>
+
+<!-- Include Google Maps API script with your key -->
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_KEY&callback=initMap"></script>
+
 </body>
+
 </html>
